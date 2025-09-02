@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
+import ProductSkeleton from "../components/ProductSkeleton"; // skeleton yang kita buat tadi
 
-const products = [
+const productsData = [
   {
     id: 1,
     name: "Kaos JKT48 Birthday T-Shirt",
@@ -31,6 +33,19 @@ const products = [
 ];
 
 function Home() {
+  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    // simulasi ambil data
+    const timer = setTimeout(() => {
+      setProducts(productsData);
+      setLoading(false);
+    }, 1500); // 1.5 detik loading
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="container">
       <div className="banner">
@@ -42,9 +57,9 @@ function Home() {
       </div>
 
       <div className="product-grid">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+        {loading
+          ? Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
+          : products.map((p) => <ProductCard key={p.id} product={p} />)}
       </div>
 
       <div className="section-title-img">
@@ -52,9 +67,9 @@ function Home() {
       </div>
 
       <div className="product-grid">
-        {products.map((p) => (
-          <ProductCard key={`alt-${p.id}`} product={p} />
-        ))}
+        {loading
+          ? Array(3).fill(0).map((_, i) => <ProductSkeleton key={`alt-${i}`} />)
+          : products.map((p) => <ProductCard key={`alt-${p.id}`} product={p} />)}
       </div>
     </div>
   );
