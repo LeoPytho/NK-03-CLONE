@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "../styles/product-details.css";
 
 const products = [
@@ -9,14 +10,29 @@ const products = [
 
 function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const product = products.find((p) => p.id === parseInt(id));
 
   if (!product) return <p>Produk tidak ditemukan</p>;
 
+  const handleBuyNow = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate(`/purchase/${product.id}`);
+    }, 1000);
+  };
+
   return (
     <div className="product-detail container">
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
+
       <div className="product-detail-grid">
-        
         <div className="product-image-wrapper">
           <img src={product.image} alt={product.name} className="product-image" />
         </div>
@@ -27,7 +43,9 @@ function ProductDetail() {
 
           <div className="product-actions">
             <button className="btn btn-cart">Masukkan Keranjang</button>
-            <button className="btn btn-buy">Beli Sekarang</button>
+            <button className="btn btn-buy" onClick={handleBuyNow}>
+              Beli Sekarang
+            </button>
           </div>
 
           <div className="product-section">
@@ -35,15 +53,6 @@ function ProductDetail() {
             <p>{product.detail}</p>
           </div>
         </div>
-      </div>
-
-      <div className="product-description">
-        <h3>Deskripsi Produk</h3>
-        <p>
-          {product.detail} Produk ini dibuat dengan bahan berkualitas tinggi,
-          nyaman dipakai, dan cocok untuk kegiatan sehari-hari maupun acara
-          spesial fans JKT48.
-        </p>
       </div>
     </div>
   );
