@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import "../styles/product-details.css";
 
 const products = [
-  { id: 1, name: "Kaos JKT48 Birthday T-Shirt", price: 199000, image: "/img/product.jpeg", detail: "Kaos eksklusif JKT48 edisi ulang tahun." },
-  { id: 2, name: "Kaos JKT48 Hoodie", price: 250000, image: "/img/product.jpeg", detail: "Hoodie nyaman dengan desain JKT48." },
-  { id: 3, name: "Kaos JKT48 Polo Shirt", price: 180000, image: "/img/product.jpeg", detail: "Polo shirt kasual untuk fans JKT48." },
+  { id: 1, name: "Kaos JKT48 Birthday T-Shirt", price: 199000, image: "/img/product.jpg", detail: "Kaos eksklusif JKT48 edisi ulang tahun." },
+  { id: 2, name: "Kaos JKT48 Hoodie", price: 250000, image: "/img/product.jpg", detail: "Hoodie nyaman dengan desain JKT48." },
+  { id: 3, name: "Kaos JKT48 Polo Shirt", price: 180000, image: "/img/product.jpg", detail: "Polo shirt kasual untuk fans JKT48." },
 ];
 
 function ProductDetail() {
