@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
-import ProductSkeleton from "../components/ProductSkeleton"; // skeleton yang kita buat tadi
+import ProductSkeleton from "../components/ProductSkeleton";
 
 const productsData = [
   {
@@ -37,11 +37,10 @@ function Home() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    // simulasi ambil data
     const timer = setTimeout(() => {
       setProducts(productsData);
       setLoading(false);
-    }, 1500); // 1.5 detik loading
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);

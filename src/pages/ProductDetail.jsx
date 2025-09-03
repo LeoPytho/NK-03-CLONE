@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/product-details.css";
 
 const products = [
@@ -11,8 +11,14 @@ const products = [
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const product = products.find((p) => p.id === parseInt(id));
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, [id]);
 
   if (!product) return <p>Produk tidak ditemukan</p>;
 
@@ -26,34 +32,40 @@ function ProductDetail() {
 
   return (
     <div className="product-detail container">
-      {loading && (
-        <div className="loading-overlay">
-          <div className="spinner"></div>
+      {loading ? (
+        <div className="product-detail-grid">
+          <div className="skeleton-img"></div>
+          <div className="product-info">
+            <div className="skeleton-text long"></div>
+            <div className="skeleton-text short"></div>
+            <div className="skeleton-text long"></div>
+            <div className="skeleton-text short"></div>
+          </div>
+        </div>
+      ) : (
+        <div className="product-detail-grid">
+          <div className="product-image-wrapper">
+            <img src={product.image} alt={product.name} className="product-image" />
+          </div>
+
+          <div className="product-info">
+            <h1 className="product-title">{product.name}</h1>
+            <p className="product-price">Rp {product.price.toLocaleString()}</p>
+
+            <div className="product-actions">
+              <button className="btn btn-cart">Masukkan Keranjang</button>
+              <button className="btn btn-buy" onClick={handleBuyNow}>
+                Beli Sekarang
+              </button>
+            </div>
+
+            <div className="product-section">
+              <h3>Detail Produk</h3>
+              <p>{product.detail}</p>
+            </div>
+          </div>
         </div>
       )}
-
-      <div className="product-detail-grid">
-        <div className="product-image-wrapper">
-          <img src={product.image} alt={product.name} className="product-image" />
-        </div>
-
-        <div className="product-info">
-          <h1 className="product-title">{product.name}</h1>
-          <p className="product-price">Rp {product.price.toLocaleString()}</p>
-
-          <div className="product-actions">
-            <button className="btn btn-cart">Masukkan Keranjang</button>
-            <button className="btn btn-buy" onClick={handleBuyNow}>
-              Beli Sekarang
-            </button>
-          </div>
-
-          <div className="product-section">
-            <h3>Detail Produk</h3>
-            <p>{product.detail}</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
