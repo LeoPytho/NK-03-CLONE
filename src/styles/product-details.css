@@ -84,6 +84,27 @@
   background: #b00017;
 }
 
+.btn-buy.loading-ring {
+  position: relative;
+  color: transparent;
+}
+
+.btn-buy.loading-ring .ring {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #fff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .product-section h3 {
   font-size: 18px;
   margin-bottom: 6px;

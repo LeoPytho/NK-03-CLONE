@@ -12,6 +12,7 @@ function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [buying, setBuying] = useState(false);
 
   const product = products.find((p) => p.id === parseInt(id));
 
@@ -23,11 +24,10 @@ function ProductDetail() {
   if (!product) return <p>Produk tidak ditemukan</p>;
 
   const handleBuyNow = () => {
-    setLoading(true);
+    setBuying(true);
     setTimeout(() => {
-      setLoading(false);
       navigate(`/purchase/${product.id}`);
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -54,8 +54,12 @@ function ProductDetail() {
 
             <div className="product-actions">
               <button className="btn btn-cart">Masukkan Keranjang</button>
-              <button className="btn btn-buy" onClick={handleBuyNow}>
-                Beli Sekarang
+              <button
+                className={`btn btn-buy ${buying ? "loading-ring" : ""}`}
+                onClick={handleBuyNow}
+                disabled={buying}
+              >
+                {buying ? <span className="ring"></span> : "Beli Sekarang"}
               </button>
             </div>
 
