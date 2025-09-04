@@ -11,6 +11,7 @@ const products = [
 function Checkout() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("purchaseData");
@@ -30,10 +31,21 @@ function Checkout() {
   const total = product.price + ongkir - diskon + kodeUnik;
 
   const handleFinalSubmit = () => {
-    const checkoutData = { ...data, ongkir, diskon, kode_unik: kodeUnik, total, product_name: product.name };
+    setPaying(true);
+
+    const checkoutData = {
+      ...data,
+      ongkir,
+      diskon,
+      kode_unik: kodeUnik,
+      total,
+      product_name: product.name,
+    };
     sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
 
-    navigate("/success");
+    setTimeout(() => {
+      navigate("/success");
+    }, 1500);
   };
 
   return (
@@ -80,12 +92,18 @@ function Checkout() {
         </table>
       </div>
 
-      <button className="btn-pay" onClick={handleFinalSubmit}>
-        Bayar Sekarang
+      <button className="btn-pay" onClick={handleFinalSubmit} disabled={paying}>
+        {paying ? (
+          <div className="btn-loader">
+            <span className="loader-ring"></span>
+            Memproses...
+          </div>
+        ) : (
+          "Bayar Sekarang"
+        )}
       </button>
     </div>
   );
 }
 
 export default Checkout;
-    
