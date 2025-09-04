@@ -7,6 +7,7 @@ function PurchaseForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", nama: "", telpon: "", alamat: "" });
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
@@ -17,10 +18,13 @@ function PurchaseForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     sessionStorage.setItem("purchaseData", JSON.stringify({ ...form, product_id: id }));
 
-    navigate("/checkout");
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 1500);
   };
 
   return (
@@ -57,7 +61,16 @@ function PurchaseForm() {
             Alamat
             <textarea name="alamat" value={form.alamat} onChange={handleChange} rows="4" required />
           </label>
-          <button type="submit">Lanjutkan</button>
+          <button type="submit" disabled={submitting}>
+            {submitting ? (
+              <div className="btn-loader">
+                <span className="loader-ring"></span>
+                Memproses...
+              </div>
+            ) : (
+              "Lanjutkan"
+            )}
+          </button>
         </form>
       )}
     </div>
