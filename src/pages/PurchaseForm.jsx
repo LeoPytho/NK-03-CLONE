@@ -5,7 +5,13 @@ import "../styles/purchase-form.css";
 function PurchaseForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", nama: "", telpon: "", alamat: "" });
+  const [form, setForm] = useState({
+    email: "",
+    nama: "",
+    telpon: "",
+    alamat: "",
+    fanbase_membership: "",
+  });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -14,7 +20,8 @@ function PurchaseForm() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,7 +31,7 @@ function PurchaseForm() {
 
     setTimeout(() => {
       navigate("/checkout");
-    }, 1500);
+    }, 500);
   };
 
   return (
@@ -47,20 +54,54 @@ function PurchaseForm() {
         <form onSubmit={handleSubmit}>
           <label>
             Email
-            <input type="email" name="email" value={form.email} onChange={handleChange} required />
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
           </label>
           <label>
             Nama
-            <input type="text" name="nama" value={form.nama} onChange={handleChange} required />
+            <input
+              type="text"
+              name="nama"
+              value={form.nama}
+              onChange={handleChange}
+              required
+            />
           </label>
           <label>
             No. Telpon
-            <input type="tel" name="telpon" value={form.telpon} onChange={handleChange} required />
+            <input
+              type="tel"
+              name="telpon"
+              value={form.telpon}
+              onChange={handleChange}
+              required
+            />
           </label>
           <label>
             Alamat
-            <textarea name="alamat" value={form.alamat} onChange={handleChange} rows="4" required />
+            <textarea
+              name="alamat"
+              value={form.alamat}
+              onChange={handleChange}
+              rows="4"
+              required
+            />
           </label>
+          <label>
+            Keanggotaan Fanbase (opsional)
+            <input
+              type="text"
+              name="fanbase_membership"
+              value={form.fanbase_membership}
+              onChange={handleChange}
+            />
+          </label>
+
           <button type="submit" disabled={submitting}>
             {submitting ? (
               <div className="btn-loader">
@@ -68,7 +109,7 @@ function PurchaseForm() {
                 Memproses...
               </div>
             ) : (
-              "Lanjutkan"
+              "Selanjutnya"
             )}
           </button>
         </form>
