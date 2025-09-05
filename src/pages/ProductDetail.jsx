@@ -2,26 +2,38 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "../styles/product-details.css";
 
-const products = [
-  { id: 1, name: "Kaos JKT48 Birthday T-Shirt", price: 199000, image: "/img/product.jpg", detail: "Kaos eksklusif JKT48 edisi ulang tahun." },
-  { id: 2, name: "Kaos JKT48 Hoodie", price: 250000, image: "/img/product.jpg", detail: "Hoodie nyaman dengan desain JKT48." },
-  { id: 3, name: "Kaos JKT48 Polo Shirt", price: 180000, image: "/img/product.jpg", detail: "Polo shirt kasual untuk fans JKT48." },
-];
-
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
-
-  const product = products.find((p) => p.id === parseInt(id));
+  const [product, setProduct] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(
+          `https://backend-seven-nu-19.vercel.app/api/merchant/products/${id}`
+        );
+        const data = await res.json();
+
+        if (res.ok) {
+          setProduct(data);
+        } else {
+          setProduct(null);
+        }
+      } catch (err) {
+        console.error("Gagal ambil detail produk:", err);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
-  if (!product) return <p>Produk tidak ditemukan</p>;
+  if (!loading && !product) return <p>Produk tidak ditemukan</p>;
 
   const handleBuyNow = () => {
     setBuying(true);
@@ -45,7 +57,11 @@ function ProductDetail() {
       ) : (
         <div className="product-detail-grid">
           <div className="product-image-wrapper">
-            <img src={product.image} alt={product.name} className="product-image" />
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="product-image"
+            />
           </div>
 
           <div className="product-info">
@@ -65,7 +81,7 @@ function ProductDetail() {
 
             <div className="product-section">
               <h3>Detail Produk</h3>
-              <p>{product.detail}</p>
+              <p>{product.description || "Tidak ada deskripsi"}</p>
             </div>
           </div>
         </div>
