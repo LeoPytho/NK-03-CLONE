@@ -2,47 +2,24 @@ import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
 import ProductSkeleton from "../components/ProductSkeleton";
 
-const productsData = [
-  {
-    id: 1,
-    name: "Kaos JKT48 Birthday T-Shirt",
-    price: 199000,
-    image: "/img/product.jpg",
-    rating: 4.9,
-    sold: "10 terjual",
-    location: "Kota Depok",
-  },
-  {
-    id: 2,
-    name: "Kaos JKT48 Hoodie",
-    price: 250000,
-    image: "/img/product.jpg",
-    rating: 4.8,
-    sold: "8 terjual",
-    location: "Jakarta",
-  },
-  {
-    id: 3,
-    name: "Kaos JKT48 Polo Shirt",
-    price: 180000,
-    image: "/img/product.jpg",
-    rating: 4.7,
-    sold: "12 terjual",
-    location: "Bandung",
-  },
-];
-
 function Home() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setProducts(productsData);
-      setLoading(false);
-    }, 1500);
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("https://backend-seven-nu-19.vercel.app/api/merchant/products");
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Gagal ambil produk:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    fetchProducts();
   }, []);
 
   return (
@@ -67,8 +44,12 @@ function Home() {
 
       <div className="product-grid">
         {loading
-          ? Array(3).fill(0).map((_, i) => <ProductSkeleton key={`alt-${i}`} />)
-          : products.map((p) => <ProductCard key={`alt-${p.id}`} product={p} />)}
+          ? Array(3).fill(0).map((_, i) => (
+              <ProductSkeleton key={`alt-${i}`} />
+            ))
+          : products.map((p) => (
+              <ProductCard key={`alt-${p.id}`} product={p} />
+            ))}
       </div>
     </div>
   );
