@@ -2,36 +2,55 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/checkout.css";
 
-const products = [
-  { id: 1, name: "Kaos JKT48 Birthday T-Shirt", price: 199000 },
-  { id: 2, name: "Kaos JKT48 Hoodie", price: 250000 },
-  { id: 3, name: "Kaos JKT48 Polo Shirt", price: 180000 },
-];
-
 function Checkout() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [product, setProduct] = useState(null);
   const [paying, setPaying] = useState(false);
+  const [error, setError] = useState("");
+  const [loadingProduct, setLoadingProduct] = useState(true);
+
+  const ongkir = 15000;
+  const diskon = 20000;
+  const kodeUnik = 123;
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("purchaseData");
     if (!storedData) {
       navigate("/");
-    } else {
-      setData(JSON.parse(storedData));
+      return;
     }
-  }, []);
+    const parsedData = JSON.parse(storedData);
+    setData(parsedData);
 
-  if (!data) return null;
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("https://backend-seven-nu-19.vercel.app/api/merchant/products");
+        if (!res.ok) throw new Error("Gagal mengambil data produk");
+        const productsData = await res.json();
 
-  const product = products.find((p) => p.id === parseInt(data.product_id));
-  const ongkir = 15000;
-  const diskon = 20000;
-  const kodeUnik = 123;
-  const total = product.price + ongkir - diskon + kodeUnik;
+        const selected = productsData.find(
+          (p) => p.id === parseInt(parsedData.product_id)
+        );
+        if (!selected) throw new Error("Produk tidak ditemukan");
 
-  const handleFinalSubmit = () => {
+        setProduct(selected);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoadingProduct(false);
+      }
+    };
+
+    fetchProducts();
+  }, [navigate]);
+
+  const total = product ? product.price + ongkir - diskon + kodeUnik : 0;
+
+  const handleFinalSubmit = async () => {
     setPaying(true);
+    setError("");
 
     const checkoutData = {
       ...data,
@@ -41,12 +60,66 @@ function Checkout() {
       total,
       product_name: product.name,
     };
-    sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
 
-    setTimeout(() => {
+    try {
+      const response = await fetch("https://backend-seven-nu-19.vercel.app/api/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: data.product_id,
+          email: data.email,
+          nama: data.nama,
+          telpon: data.telpon,
+          alamat: data.alamat,
+          fanbase_membership: data.fanbase_membership || null,
+        }),
+      });
+
+      let resData = {};
+      try {
+        resData = await response.json();
+      } catch {
+        throw new Error("Response backend kosong atau bukan JSON");
+      }
+
+      if (!response.ok) {
+        throw new Error(resData.message || "Terjadi kesalahan pada server");
+      }
+
+      sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
       navigate("/success");
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setPaying(false);
+    }
   };
+
+  if (!data || loadingProduct) {
+    return (
+      <div className="checkout container">
+        <h2>Invoice Pembelian</h2>
+        <div className="skeleton-section">
+          <div className="skeleton skeleton-label"></div>
+          <div className="skeleton skeleton-text"></div>
+          <div className="skeleton skeleton-text"></div>
+          <div className="skeleton skeleton-text"></div>
+        </div>
+        <div className="skeleton-section">
+          <div className="skeleton skeleton-label"></div>
+          <div className="skeleton skeleton-table-row"></div>
+          <div className="skeleton skeleton-table-row"></div>
+          <div className="skeleton skeleton-table-row"></div>
+          <div className="skeleton skeleton-table-row"></div>
+          <div className="skeleton skeleton-table-row"></div>
+          <div className="skeleton skeleton-table-row total-row"></div>
+        </div>
+        <div className="skeleton skeleton-button"></div>
+      </div>
+    );
+  }
+
+  if (!product) return <p>Produk tidak ditemukan.</p>;
 
   return (
     <div className="checkout container">
@@ -91,6 +164,8 @@ function Checkout() {
           </tbody>
         </table>
       </div>
+
+      {error && <p className="error">{error}</p>}
 
       <button className="btn-pay" onClick={handleFinalSubmit} disabled={paying}>
         {paying ? (
