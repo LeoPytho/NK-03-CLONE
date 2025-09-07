@@ -15,13 +15,11 @@ function Checkout() {
   const kodeUnik = 123;
 
   useEffect(() => {
-    // kalau sudah ada checkoutData → redirect ke success
     if (sessionStorage.getItem("checkoutData")) {
       navigate("/success", { replace: true });
       return;
     }
 
-    // ambil data dari sessionStorage
     const storedData =
       sessionStorage.getItem("customerData") ||
       sessionStorage.getItem("purchaseData");
@@ -85,13 +83,13 @@ function Checkout() {
           body: JSON.stringify({
             username: "vzy",
             password: "vzy",
-            nama: data.nama || data.customer_name,
-            alamat: data.alamat || data.address,
-            nomor_hp: data.telpon || data.phone,
+            nama: data.nama,
+            alamat: data.alamat,
+            nomor_hp: data.nomor_hp,
             email: data.email,
             harga: total,
             product: product?.name || "Produk Default",
-            member: data.fanbase_membership || "no",
+            member: data.member || "no",
           }),
         }
       );
@@ -143,16 +141,16 @@ function Checkout() {
       <div className="invoice-section">
         <h3>Data Pembeli</h3>
         <p>
-          <strong>Nama:</strong> {data.nama || data.customer_name}
+          <strong>Nama:</strong> {data.nama}
         </p>
         <p>
           <strong>Email:</strong> {data.email}
         </p>
         <p>
-          <strong>No. Telpon:</strong> {data.telpon || data.phone}
+          <strong>No. HP:</strong> {data.nomor_hp}
         </p>
         <p>
-          <strong>Alamat:</strong> {data.alamat || data.address}
+          <strong>Alamat:</strong> {data.alamat}
         </p>
       </div>
 

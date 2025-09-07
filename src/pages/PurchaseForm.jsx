@@ -8,18 +8,37 @@ function PurchaseForm() {
   const [form, setForm] = useState({
     email: "",
     nama: "",
-    telpon: "",
+    nomor_hp: "",
     alamat: "",
-    fanbase_membership: false,
+    member: false,
   });
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(
+          `https://backend-seven-nu-19.vercel.app/api/merchant/products/${id}`
+        );
+        const data = await res.json();
+        if (res.ok) {
+          setProduct(data);
+        } else {
+          setError("Produk tidak ditemukan.");
+        }
+      } catch (err) {
+        console.error("Gagal ambil detail produk:", err);
+        setError("Gagal mengambil data produk.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
@@ -29,43 +48,72 @@ function PurchaseForm() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!form.email || !form.nama || !form.telpon || !form.alamat) {
+    if (!form.email || !form.nama || !form.nomor_hp || !form.alamat) {
       setError("Harap lengkapi semua field wajib.");
+      return;
+    }
+
+    if (!product) {
+      setError("Produk tidak valid.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // Simpan data pembelian ke sessionStorage
-      sessionStorage.setItem(
-        "purchaseData",
-        JSON.stringify({
+      const params = new URLSearchParams({
+        username: "vzy",
+        password: "vzy",
+        email: form.email,
+        limit: 1,
+      });
+
+      const res = await fetch(
+        `https://v2.jkt48connect.com/api/nayrakuen/cari-data?${params}`
+      );
+      const result = await res.json();
+
+      let dataToSave;
+
+      if (result.status && result.count > 0) {
+        const existing = result.data[0];
+        dataToSave = {
+          customer_id: existing.customer_id,
+          nama: existing.nama,
+          alamat: existing.alamat,
+          nomor_hp: existing.nomor_hp,
+          email: existing.email,
+          member: existing.member,
+          product_id: id,
+        };
+      } else {
+        dataToSave = {
           product_id: id,
           email: form.email,
           nama: form.nama,
-          telpon: form.telpon,
+          nomor_hp: form.nomor_hp,
           alamat: form.alamat,
-          fanbase_membership: form.fanbase_membership ? "yes" : "no",
-        })
-      );
+          member: form.member ? "yes" : "no",
+        };
+      }
 
+      sessionStorage.setItem("purchaseData", JSON.stringify(dataToSave));
       navigate("/checkout");
     } catch (err) {
-      setError("Terjadi kesalahan saat menyimpan data.");
-      console.error(err);
+      setError("Terjadi kesalahan koneksi.");
+      console.error("Error checking email:", err);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="purchase-form container">
-      <h2>Formulir Pembelian</h2>
+    <div className="purchase-form">
+      <h2 className="form-title">Form Penginputan Pembelian</h2>
 
       {loading ? (
         <div className="skeleton-form">
@@ -88,6 +136,7 @@ function PurchaseForm() {
               name="email"
               value={form.email}
               onChange={handleChange}
+              placeholder="contoh: adam@gmail.com"
               required
             />
           </label>
@@ -98,16 +147,18 @@ function PurchaseForm() {
               name="nama"
               value={form.nama}
               onChange={handleChange}
+              placeholder="contoh: Adam"
               required
             />
           </label>
           <label>
-            No. Telpon
+            No Telepon
             <input
               type="tel"
-              name="telpon"
-              value={form.telpon}
+              name="nomor_hp"
+              value={form.nomor_hp}
               onChange={handleChange}
+              placeholder="contoh: 0898XXXXXXXX"
               required
             />
           </label>
@@ -117,32 +168,35 @@ function PurchaseForm() {
               name="alamat"
               value={form.alamat}
               onChange={handleChange}
-              rows="4"
+              placeholder="contoh: Jl. Medan Merdeka Timur No.XX"
+              rows="3"
               required
             />
           </label>
           <label className="checkbox-label">
             <input
               type="checkbox"
-              name="fanbase_membership"
-              checked={form.fanbase_membership}
+              name="member"
+              checked={form.member}
               onChange={handleChange}
             />
-            anggota fanbase
+            Anggota Fanbase
           </label>
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit" disabled={submitting}>
-            {submitting ? (
-              <div className="btn-loader">
-                <span className="loader-ring"></span>
-                Menyimpan...
-              </div>
-            ) : (
-              "Selanjutnya"
-            )}
-          </button>
+          <div className="button-container">
+            <button type="submit" disabled={submitting}>
+              {submitting ? (
+                <div className="btn-loader">
+                  <span className="loader-ring"></span>
+                  Mengecek...
+                </div>
+              ) : (
+                "Submit"
+              )}
+            </button>
+          </div>
         </form>
       )}
     </div>
