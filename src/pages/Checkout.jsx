@@ -15,25 +15,40 @@ function Checkout() {
   const kodeUnik = 123;
 
   useEffect(() => {
-    const storedData = sessionStorage.getItem("purchaseData");
-    if (!storedData) {
-      navigate("/");
+    // kalau sudah ada checkoutData → redirect ke success
+    if (sessionStorage.getItem("checkoutData")) {
+      navigate("/success", { replace: true });
       return;
     }
+
+    // ambil data dari sessionStorage
+    const storedData =
+      sessionStorage.getItem("customerData") ||
+      sessionStorage.getItem("purchaseData");
+
+    if (!storedData) {
+      navigate("/", { replace: true });
+      return;
+    }
+
     const parsedData = JSON.parse(storedData);
     setData(parsedData);
 
     const fetchProducts = async () => {
       try {
-        const res = await fetch("https://backend-seven-nu-19.vercel.app/api/merchant/products");
+        const res = await fetch(
+          "https://backend-seven-nu-19.vercel.app/api/merchant/products"
+        );
         if (!res.ok) throw new Error("Gagal mengambil data produk");
         const productsData = await res.json();
 
         const selected = productsData.find(
-          (p) => p.id === parseInt(parsedData.product_id)
+          (p) =>
+            p.id ===
+            parseInt(parsedData.product_id || parsedData.product_id_ref)
         );
-        if (!selected) throw new Error("Produk tidak ditemukan");
 
+        if (!selected) throw new Error("Produk tidak ditemukan");
         setProduct(selected);
       } catch (err) {
         console.error(err);
@@ -58,36 +73,36 @@ function Checkout() {
       diskon,
       kode_unik: kodeUnik,
       total,
-      product_name: product.name,
+      product_name: product?.name,
     };
 
     try {
-      const response = await fetch("https://backend-seven-nu-19.vercel.app/api/purchase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: data.product_id,
-          email: data.email,
-          nama: data.nama,
-          telpon: data.telpon,
-          alamat: data.alamat,
-          fanbase_membership: data.fanbase_membership || null,
-        }),
-      });
+      const response = await fetch(
+        "https://v2.jkt48connect.com/api/nayrakuen/customer-input",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: "vzy",
+            password: "vzy",
+            nama: data.nama || data.customer_name,
+            alamat: data.alamat || data.address,
+            nomor_hp: data.telpon || data.phone,
+            email: data.email,
+            harga: total,
+            product: product?.name || "Produk Default",
+            member: data.fanbase_membership || "no",
+          }),
+        }
+      );
 
-      let resData = {};
-      try {
-        resData = await response.json();
-      } catch {
-        throw new Error("Response backend kosong atau bukan JSON");
-      }
-
+      const resData = await response.json();
       if (!response.ok) {
         throw new Error(resData.message || "Terjadi kesalahan pada server");
       }
 
       sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
-      navigate("/success");
+      navigate("/success", { replace: true });
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -127,10 +142,18 @@ function Checkout() {
 
       <div className="invoice-section">
         <h3>Data Pembeli</h3>
-        <p><strong>Nama:</strong> {data.nama}</p>
-        <p><strong>Email:</strong> {data.email}</p>
-        <p><strong>No. Telpon:</strong> {data.telpon}</p>
-        <p><strong>Alamat:</strong> {data.alamat}</p>
+        <p>
+          <strong>Nama:</strong> {data.nama || data.customer_name}
+        </p>
+        <p>
+          <strong>Email:</strong> {data.email}
+        </p>
+        <p>
+          <strong>No. Telpon:</strong> {data.telpon || data.phone}
+        </p>
+        <p>
+          <strong>Alamat:</strong> {data.alamat || data.address}
+        </p>
       </div>
 
       <div className="invoice-section">
@@ -158,8 +181,12 @@ function Checkout() {
               <td>Rp {kodeUnik.toLocaleString()}</td>
             </tr>
             <tr className="total-row">
-              <td><strong>Total Bayar</strong></td>
-              <td><strong>Rp {total.toLocaleString()}</strong></td>
+              <td>
+                <strong>Total Bayar</strong>
+              </td>
+              <td>
+                <strong>Rp {total.toLocaleString()}</strong>
+              </td>
             </tr>
           </tbody>
         </table>

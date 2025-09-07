@@ -10,28 +10,57 @@ function PurchaseForm() {
     nama: "",
     telpon: "",
     alamat: "",
-    fanbase_membership: "",
+    fanbase_membership: false,
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
+    const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, type, checked, value } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!form.email || !form.nama || !form.telpon || !form.alamat) {
+      setError("Harap lengkapi semua field wajib.");
+      return;
+    }
+
     setSubmitting(true);
 
-    sessionStorage.setItem("purchaseData", JSON.stringify({ ...form, product_id: id }));
+    try {
+      // Simpan data pembelian ke sessionStorage
+      sessionStorage.setItem(
+        "purchaseData",
+        JSON.stringify({
+          product_id: id,
+          email: form.email,
+          nama: form.nama,
+          telpon: form.telpon,
+          alamat: form.alamat,
+          fanbase_membership: form.fanbase_membership ? "yes" : "no",
+        })
+      );
 
-    setTimeout(() => {
       navigate("/checkout");
-    }, 500);
+    } catch (err) {
+      setError("Terjadi kesalahan saat menyimpan data.");
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -92,21 +121,23 @@ function PurchaseForm() {
               required
             />
           </label>
-          <label>
-            Keanggotaan Fanbase (opsional)
+          <label className="checkbox-label">
             <input
-              type="text"
+              type="checkbox"
               name="fanbase_membership"
-              value={form.fanbase_membership}
+              checked={form.fanbase_membership}
               onChange={handleChange}
             />
+            anggota fanbase
           </label>
+
+          {error && <p className="error">{error}</p>}
 
           <button type="submit" disabled={submitting}>
             {submitting ? (
               <div className="btn-loader">
                 <span className="loader-ring"></span>
-                Memproses...
+                Menyimpan...
               </div>
             ) : (
               "Selanjutnya"
