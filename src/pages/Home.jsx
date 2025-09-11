@@ -22,6 +22,8 @@ function Home() {
     fetchProducts();
   }, []);
 
+  const skeletonCount = products.length > 0 ? products.length : 6;
+
   return (
     <div className="container">
       <div className="banner">
@@ -34,7 +36,9 @@ function Home() {
 
       <div className="product-grid">
         {loading
-          ? Array(3).fill(0).map((_, i) => <ProductSkeleton key={i} />)
+          ? Array.from({ length: skeletonCount }, (_, i) => (
+              <ProductSkeleton key={i} />
+            ))
           : products.map((p) => <ProductCard key={p.id} product={p} />)}
       </div>
 
@@ -44,7 +48,7 @@ function Home() {
 
       <div className="product-grid">
         {loading
-          ? Array(3).fill(0).map((_, i) => (
+          ? Array.from({ length: skeletonCount }, (_, i) => (
               <ProductSkeleton key={`alt-${i}`} />
             ))
           : products.map((p) => (
