@@ -17,7 +17,11 @@ function ProductCard({ product }) {
       />
       <div className="product-body">
         <h3 className="product-title">{product.name}</h3>
-        <p className="price">Rp{product.price.toLocaleString("id-ID")}</p>
+
+        <p className="price">
+          Rp{Number(product.price || 0).toLocaleString("id-ID")}
+        </p>
+
         <div className="product-info">
           <p>
             <FaStar color="gold" /> {product.rating || 0} | {product.sold || 0}
