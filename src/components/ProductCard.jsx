@@ -3,10 +3,15 @@ import { FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import "../styles/product.css";
 
 function ProductCard({ product }) {
+  const thumbnail =
+    Array.isArray(product.image_url) && product.image_url.length > 0
+      ? product.image_url[0]
+      : "/img/no-image.png";
+
   return (
     <Link to={`/product/${product.id}`} className="product-card">
       <img
-        src={product.image_url || "/img/no-image.png"}
+        src={thumbnail}
         alt={product.name}
         className="product-img"
       />
