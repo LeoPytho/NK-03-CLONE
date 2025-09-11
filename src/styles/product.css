@@ -2,10 +2,13 @@
   display: flex;
   justify-content: flex-start;
   margin: 20px 0;
+  width: 100%;
 }
 
 .section-title-img img {
-  max-height: 50px;
+  max-height: 40px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
 }
 
@@ -68,6 +71,10 @@
 }
 
 @media (max-width: 768px) {
+  .section-title-img img {
+    max-height: 32px;
+  }
+
   .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
     gap: 12px !important;
@@ -87,6 +94,10 @@
 }
 
 @media (max-width: 480px) {
+  .section-title-img img {
+    max-height: 35px;
+  }
+
   .product-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 10px !important;
