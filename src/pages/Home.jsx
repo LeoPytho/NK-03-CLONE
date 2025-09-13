@@ -24,6 +24,9 @@ function Home() {
 
   const skeletonCount = products.length > 0 ? products.length : 6;
 
+  const newProducts = products.filter((p) => p.is_new === true);
+  const otherProducts = products.filter((p) => p.is_new === false);
+
   return (
     <div className="container">
       <div className="banner">
@@ -39,7 +42,7 @@ function Home() {
           ? Array.from({ length: skeletonCount }, (_, i) => (
               <ProductSkeleton key={i} />
             ))
-          : products.map((p) => <ProductCard key={p.id} product={p} />)}
+          : newProducts.map((p) => <ProductCard key={p.id} product={p} />)}
       </div>
 
       <div className="section-title-img">
@@ -51,7 +54,7 @@ function Home() {
           ? Array.from({ length: skeletonCount }, (_, i) => (
               <ProductSkeleton key={`alt-${i}`} />
             ))
-          : products.map((p) => (
+          : otherProducts.map((p) => (
               <ProductCard key={`alt-${p.id}`} product={p} />
             ))}
       </div>
