@@ -8,6 +8,7 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
   const [product, setProduct] = useState(null);
+  const [mainImage, setMainImage] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -19,6 +20,12 @@ function ProductDetail() {
 
         if (res.ok) {
           setProduct(data);
+
+          if (Array.isArray(data.image_url) && data.image_url.length > 0) {
+            setMainImage(data.image_url[0]);
+          } else {
+            setMainImage(data.image_url);
+          }
         } else {
           setProduct(null);
         }
@@ -57,16 +64,37 @@ function ProductDetail() {
       ) : (
         <div className="product-detail-grid">
           <div className="product-image-wrapper">
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="product-image"
-            />
+            <div className="main-image-container">
+              <img
+                src={mainImage}
+                alt={product.name}
+                className="product-image"
+              />
+
+              {Array.isArray(product.image_url) &&
+                product.image_url.length > 1 && (
+                  <div className="product-thumbnails">
+                    {product.image_url.map((url, index) => (
+                      <img
+                        key={index}
+                        src={url}
+                        alt={`${product.name}-${index}`}
+                        className={`thumbnail ${
+                          url === mainImage ? "active" : ""
+                        }`}
+                        onClick={() => setMainImage(url)}
+                      />
+                    ))}
+                  </div>
+                )}
+            </div>
           </div>
 
           <div className="product-info">
             <h1 className="product-title">{product.name}</h1>
-            <p className="product-price">Rp {product.price.toLocaleString()}</p>
+            <p className="product-price">
+              Rp {product.price.toLocaleString()}
+            </p>
 
             <div className="product-actions">
               <button className="btn btn-cart">Masukkan Keranjang</button>

@@ -1,6 +1,6 @@
 .product-detail.container {
   max-width: 1200px;
-  margin: 30px auto;
+  margin: 10px auto;
   padding: 20px;
   font-family: Arial, sans-serif;
 }
@@ -159,6 +159,39 @@
 
 .skeleton-text.long {
   width: 80%;
+}
+
+.main-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.product-thumbnails {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.thumbnail:hover {
+  border-color: #999;
+}
+
+.thumbnail.active {
+  border-color: #d6001c;
 }
 
 @keyframes pulse {
