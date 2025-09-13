@@ -52,7 +52,7 @@
 .product-actions {
   display: flex;
   gap: 10px;
-  margin: 10px 0;
+  margin: 10px 0 20px;
 }
 
 .btn {
@@ -107,29 +107,18 @@
 
 .product-section h3 {
   font-size: 18px;
-  margin-bottom: 6px;
-  color: #444;
-}
-
-.product-section p {
-  font-size: 15px;
-  line-height: 1.6;
-  color: #555;
-}
-
-.product-description {
-  margin-top: 40px;
-  padding: 20px;
-  border-top: 1px solid #eee;
-}
-
-.product-description h3 {
-  font-size: 18px;
   margin-bottom: 8px;
   color: #444;
 }
 
+.product-description {
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
 .product-description p {
+  margin: 6px 0;
   font-size: 15px;
   line-height: 1.6;
   color: #555;

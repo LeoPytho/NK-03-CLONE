@@ -109,7 +109,13 @@ function ProductDetail() {
 
             <div className="product-section">
               <h3>Detail Produk</h3>
-              <p>{product.description || "Tidak ada deskripsi"}</p>
+              <div className="product-description">
+                {product.description
+                  ? product.description.split("\n").map((line, index) => (
+                      <p key={index}>{line}</p>
+                    ))
+                  : "Tidak ada deskripsi"}
+              </div>
             </div>
           </div>
         </div>
