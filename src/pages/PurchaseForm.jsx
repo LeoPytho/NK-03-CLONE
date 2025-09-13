@@ -10,7 +10,7 @@ function PurchaseForm() {
     nama: "",
     nomor_hp: "",
     alamat: "",
-    member: false,
+    member: "non", // default non-anggota
   });
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,10 +41,10 @@ function PurchaseForm() {
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, type, checked, value } = e.target;
+    const { name, value } = e.target;
     setForm({
       ...form,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     });
   };
 
@@ -97,7 +97,7 @@ function PurchaseForm() {
           nama: form.nama,
           nomor_hp: form.nomor_hp,
           alamat: form.alamat,
-          member: form.member ? "yes" : "no",
+          member: form.member, // langsung ambil value select
         };
       }
 
@@ -173,14 +173,17 @@ function PurchaseForm() {
               required
             />
           </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
+          <label>
+            Status Anggota Fanbase
+            <select
               name="member"
-              checked={form.member}
+              value={form.member}
               onChange={handleChange}
-            />
-            Anggota Fanbase
+              required
+            >
+              <option value="non">Bukan Anggota</option>
+              <option value="yes">Anggota Fanbase</option>
+            </select>
           </label>
 
           {error && <p className="error">{error}</p>}
