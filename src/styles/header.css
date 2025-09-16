@@ -5,6 +5,11 @@
   font-family: Arial, sans-serif;
 }
 
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   background-color: #f9f9f9;
 }
@@ -32,7 +37,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;         
+  width: 100vw;
+  max-width: 100%;
+  box-sizing: border-box;         
 }
 
 .top-bar div {
@@ -58,8 +65,10 @@ body {
 
 /* Header Container */
 header {
-  width: auto;
+  width: 100vw;
+  max-width: 100%;
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Navbar */
@@ -71,7 +80,9 @@ header {
   justify-content: space-between;
   align-items: center;
   position: relative;
-  width: 100%;
+  width: 100vw;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -254,6 +265,9 @@ header {
   top: 100%;
   left: 0;
   right: 0;
+  width: 100vw;
+  max-width: 100%;
+  box-sizing: border-box;
   z-index: 1000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -379,6 +393,8 @@ header {
   
   .navbar {
     padding: 15px 20px;
+    width: 100vw;
+    max-width: 100%;
   }
   
   .logo {
@@ -393,11 +409,20 @@ header {
   .mobile-menu-btn {
     display: block;
   }
+  
+  .mobile-menu {
+    width: 100vw;
+    max-width: 100%;
+    left: 0;
+    right: auto;
+  }
 }
 
 @media (max-width: 480px) {
   .navbar {
     padding: 12px 15px;
+    width: 100vw;
+    max-width: 100%;
   }
   
   .logo {
@@ -406,5 +431,7 @@ header {
   
   .mobile-menu {
     padding: 15px;
+    width: 100vw;
+    max-width: 100%;
   }
 }
