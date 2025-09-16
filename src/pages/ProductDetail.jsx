@@ -120,82 +120,83 @@ function ProductDetail() {
       )}
 
       <div className="product-detail container">
-      {loading ? (
-        <div className="product-detail-grid">
-          <div className="skeleton-img"></div>
-          <div className="product-info">
-            <div className="skeleton-text long"></div>
-            <div className="skeleton-text short"></div>
-            <div className="skeleton-text long"></div>
-            <div className="skeleton-text short"></div>
-          </div>
-        </div>
-      ) : (
-        <div className="product-detail-grid">
-          <div className="product-image-wrapper">
-            <div className="main-image-container">
-              <img
-                src={mainImage}
-                alt={product.name}
-                className="product-image"
-              />
-
-              {Array.isArray(product.image_url) &&
-                product.image_url.length > 1 && (
-                  <div className="product-thumbnails">
-                    {product.image_url.map((url, index) => (
-                      <img
-                        key={index}
-                        src={url}
-                        alt={`${product.name}-${index}`}
-                        className={`thumbnail ${
-                          url === mainImage ? "active" : ""
-                        }`}
-                        onClick={() => setMainImage(url)}
-                      />
-                    ))}
-                  </div>
-                )}
+        {loading ? (
+          <div className="product-detail-grid">
+            <div className="skeleton-img"></div>
+            <div className="product-info">
+              <div className="skeleton-text long"></div>
+              <div className="skeleton-text short"></div>
+              <div className="skeleton-text long"></div>
+              <div className="skeleton-text short"></div>
             </div>
           </div>
+        ) : (
+          <div className="product-detail-grid">
+            <div className="product-image-wrapper">
+              <div className="main-image-container">
+                <img
+                  src={mainImage}
+                  alt={product.name}
+                  className="product-image"
+                />
 
-          <div className="product-info">
-            <h1 className="product-title">{product.name}</h1>
-            <p className="product-price">
-              Rp {product.price.toLocaleString()}
-            </p>
-
-            <div className="product-actions">
-              <button 
-                className={`btn btn-cart ${addingToCart ? "loading-ring" : ""}`}
-                onClick={handleAddToCart}
-                disabled={addingToCart}
-              >
-                {addingToCart ? <span className="ring"></span> : "Masukkan Keranjang"}
-              </button>
-              <button
-                className={`btn btn-buy ${buying ? "loading-ring" : ""}`}
-                onClick={handleBuyNow}
-                disabled={buying}
-              >
-                {buying ? <span className="ring"></span> : "Beli Sekarang"}
-              </button>
+                {Array.isArray(product.image_url) &&
+                  product.image_url.length > 1 && (
+                    <div className="product-thumbnails">
+                      {product.image_url.map((url, index) => (
+                        <img
+                          key={index}
+                          src={url}
+                          alt={`${product.name}-${index}`}
+                          className={`thumbnail ${
+                            url === mainImage ? "active" : ""
+                          }`}
+                          onClick={() => setMainImage(url)}
+                        />
+                      ))}
+                    </div>
+                  )}
+              </div>
             </div>
 
-            <div className="product-section">
-              <h3>Detail Produk</h3>
-              <div className="product-description">
-                {product.description
-                  ? product.description.split("\n").map((line, index) => (
-                      <p key={index}>{line}</p>
-                    ))
-                  : "Tidak ada deskripsi"}
+            <div className="product-info">
+              <h1 className="product-title">{product.name}</h1>
+              <p className="product-price">
+                Rp {product.price.toLocaleString()}
+              </p>
+
+              <div className="product-actions">
+                <button 
+                  className={`btn btn-cart ${addingToCart ? "loading-ring" : ""}`}
+                  onClick={handleAddToCart}
+                  disabled={addingToCart}
+                >
+                  {addingToCart ? <span className="ring"></span> : "Masukkan Keranjang"}
+                </button>
+                <button
+                  className={`btn btn-buy ${buying ? "loading-ring" : ""}`}
+                  onClick={handleBuyNow}
+                  disabled={buying}
+                >
+                  {buying ? <span className="ring"></span> : "Beli Sekarang"}
+                </button>
+              </div>
+
+              <div className="product-section">
+                <h3>Detail Produk</h3>
+                <div className="product-description">
+                  {product.description
+                    ? product.description.split("\n").map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))
+                    : "Tidak ada deskripsi"}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
 
