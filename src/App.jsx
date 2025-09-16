@@ -3,10 +3,10 @@ import Home from "./pages/Home";
 import ProductDetail from "./pages/ProductDetail";
 import PurchaseForm from "./pages/PurchaseForm";
 import Checkout from "./pages/Checkout";
+import Cart from "./pages/Cart";
 import Success from "./pages/Success";
 import Order from "./pages/Order";
 import Header from "./components/Header";
-import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -14,13 +14,13 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/keranjang" element={<Cart />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/purchase/:id" element={<PurchaseForm />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/cart" element={<Cart />} />
-      </Routes>
+        </Routes>
     </Router>
   );
 }
