@@ -1,92 +1,92 @@
-/* Header Styles */
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* Header wrapper */
 .header {
   width: 100%;
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Top Bar */
+/* Top Bar - mengikuti style asli */
 .top-bar {
   background-color: #7b1c1c;
   color: white;
-  font-size: 16px;
-  padding: 12px 40px;
+  font-size: 16px;             
+  padding: 12px 40px;          
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center;         
 }
 
-.contact-info {
+.top-bar .contact-info {
   display: flex;
+  align-items: center;
   gap: 20px;
 }
 
-.contact-item {
+.top-bar .contact-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: white;
 }
 
-.contact-icon {
-  color: white;
+.top-bar .contact-icon {
   font-size: 13px;
 }
 
-.contact-text {
-  font-size: 16px;
-  font-weight: 500;
+.top-bar .phone-icon {
+  transform: rotate(90deg);   
+  position: relative;
+  top: 1px;
 }
 
-.about-text {
+.top-bar a {
   color: white;
   text-decoration: none;
-  font-size: 16px;
   font-weight: 500;
-  transition: color 0.3s ease;
+  font-size: 16px;
 }
 
-.about-text:hover {
-  color: #f8f9fa;
-  text-decoration: underline;
-}
-
-/* Main Navigation */
+/* Navbar - mengikuti style asli */
 .navbar {
-  background-color: #fff;
+  background-color: white;
   border-bottom: 2px solid #ddd;
-  position: relative;
+  padding: 20px 40px;       
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .nav-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
+  width: 100%;
 }
 
-/* Logo */
 .logo {
-  font-size: 28px;
   color: #7b1c1c;
+  font-size: 28px;
 }
 
 .logo-bold {
   font-weight: bold;
 }
 
-.logo-normal {
-  font-weight: normal;
-  margin-left: 4px;
-}
-
-/* Desktop Icons */
+/* Nav Icons - mengikuti style asli dengan tambahan fungsionalitas */
+.nav-icons,
 .desktop-icons {
   display: flex;
   gap: 28px;
+  font-size: 22px;
+  cursor: pointer;
   align-items: center;
 }
 
@@ -95,35 +95,21 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
   color: #7b1c1c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 22px;
+  padding: 5px;
+  transition: color 0.3s ease;
 }
 
 .icon-button:hover {
-  background-color: #f8f9fa;
   color: #5a1414;
-  transform: translateY(-2px);
 }
 
-.icon-button .icon {
-  font-size: 22px;
-}
-
-/* Special styling for phone icon rotation */
-.contact-icon.phone-icon {
-  transform: rotate(90deg);
-  position: relative;
-  top: 1px;
-}
+/* Badge untuk counter */
 .badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: -5px;
+  right: -5px;
   background-color: #dc3545;
   color: white;
   border-radius: 50%;
@@ -134,7 +120,6 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  border: 2px solid #fff;
 }
 
 .notification-badge {
@@ -145,29 +130,22 @@
   background-color: #7b1c1c;
 }
 
-/* Mobile Menu Button */
+/* Mobile menu button - tersembunyi di desktop */
 .mobile-menu-btn {
   display: none;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
   color: #7b1c1c;
-  padding: 8px;
 }
 
-/* Mobile Menu */
+/* Mobile menu - tersembunyi di desktop */
 .mobile-menu {
   display: none;
-  background-color: #fff;
-  border-top: 1px solid #e9ecef;
+  background-color: white;
+  border-top: 1px solid #ddd;
   padding: 20px;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-menu.open {
@@ -180,38 +158,26 @@
   gap: 15px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #ddd;
 }
 
 .mobile-icon-button {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f8f9fa;
+  gap: 15px;
+  padding: 15px;
+  background: #f9f9f9;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s ease;
-  position: relative;
   width: 100%;
-  justify-content: flex-start;
-}
-
-.mobile-icon-button:hover {
-  background-color: #e9ecef;
+  text-align: left;
 }
 
 .mobile-icon-button .icon {
-  font-size: 18px;
-  color: #007bff;
-}
-
-.mobile-icon-button .badge {
-  margin-left: auto;
-  position: static;
-  border: none;
+  font-size: 20px;
+  color: #7b1c1c;
 }
 
 .mobile-contact {
@@ -221,21 +187,29 @@
 }
 
 .mobile-contact .contact-item {
-  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #7b1c1c;
 }
 
 .mobile-contact .about-link {
-  color: #007bff;
+  color: #7b1c1c;
   text-decoration: none;
   font-weight: 500;
   padding: 8px 0;
 }
 
-/* Responsive Design */
+/* Responsive breakpoints */
 @media (max-width: 768px) {
   /* Hide top bar on mobile */
   .top-bar {
     display: none;
+  }
+
+  /* Adjust navbar for mobile */
+  .navbar {
+    padding: 15px 20px;
   }
 
   /* Show mobile menu button */
@@ -248,59 +222,33 @@
     display: none;
   }
 
-  /* Adjust navbar padding */
-  .nav-container {
-    padding: 12px 15px;
-  }
-
   /* Adjust logo size */
   .logo {
-    font-size: 20px;
+    font-size: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .nav-container {
-    padding: 10px 12px;
+  .navbar {
+    padding: 12px 15px;
   }
 
   .logo {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .mobile-menu {
     padding: 15px;
   }
-
-  .contact-text {
-    font-size: 12px;
-  }
 }
 
-/* Tablet styles */
+/* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
   .top-bar {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding: 12px 30px;
   }
 
-  .nav-container {
-    padding: 12px 15px;
-  }
-
-  .contact-info {
-    gap: 15px;
-  }
-
-  .desktop-icons {
-    gap: 15px;
-  }
-}
-
-/* Large screen optimization */
-@media (min-width: 1200px) {
-  .top-bar,
-  .nav-container {
-    max-width: 1400px;
+  .navbar {
+    padding: 18px 30px;
   }
 }
