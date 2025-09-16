@@ -58,7 +58,7 @@ body {
 
 /* Header Container */
 header {
-  width: 100%;
+  width: auto;
   position: relative;
 }
 
