@@ -7,8 +7,10 @@ function ProductDetail() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -42,6 +44,60 @@ function ProductDetail() {
 
   if (!loading && !product) return <p>Produk tidak ditemukan</p>;
 
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 3000);
+  };
+
+  const handleAddToCart = () => {
+    setAddingToCart(true);
+    
+    try {
+      // Ambil data keranjang yang sudah ada dari localStorage
+      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      
+      // Data produk yang akan disimpan
+      const productToAdd = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image_url: Array.isArray(product.image_url) ? product.image_url[0] : product.image_url,
+        quantity: 1,
+        addedAt: new Date().toISOString()
+      };
+      
+      // Cek apakah produk sudah ada di keranjang
+      const existingProductIndex = existingCart.findIndex(item => item.id === product.id);
+      
+      if (existingProductIndex > -1) {
+        // Jika sudah ada, tambah quantity
+        existingCart[existingProductIndex].quantity += 1;
+      } else {
+        // Jika belum ada, tambah produk baru
+        existingCart.push(productToAdd);
+      }
+      
+      // Simpan kembali ke localStorage
+      localStorage.setItem('cart', JSON.stringify(existingCart));
+      
+      // Tampilkan notifikasi atau feedback
+      console.log('Produk berhasil ditambahkan ke keranjang!');
+      
+      setTimeout(() => {
+        setAddingToCart(false);
+        // Tampilkan toast notification
+        showToast('Produk berhasil ditambahkan ke keranjang!', 'success');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Gagal menambahkan ke keranjang:', error);
+      setAddingToCart(false);
+      showToast('Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+    }
+  };
+
   const handleBuyNow = () => {
     setBuying(true);
     setTimeout(() => {
@@ -50,7 +106,20 @@ function ProductDetail() {
   };
 
   return (
-    <div className="product-detail container">
+    <>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`toast toast-${toast.type}`}>
+          <div className="toast-content">
+            <div className="toast-icon">
+              {toast.type === 'success' ? '✅' : '❌'}
+            </div>
+            <span className="toast-message">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="product-detail container">
       {loading ? (
         <div className="product-detail-grid">
           <div className="skeleton-img"></div>
@@ -97,7 +166,13 @@ function ProductDetail() {
             </p>
 
             <div className="product-actions">
-              <button className="btn btn-cart">Masukkan Keranjang</button>
+              <button 
+                className={`btn btn-cart ${addingToCart ? "loading-ring" : ""}`}
+                onClick={handleAddToCart}
+                disabled={addingToCart}
+              >
+                {addingToCart ? <span className="ring"></span> : "Masukkan Keranjang"}
+              </button>
               <button
                 className={`btn btn-buy ${buying ? "loading-ring" : ""}`}
                 onClick={handleBuyNow}
