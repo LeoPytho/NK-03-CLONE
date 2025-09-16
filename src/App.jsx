@@ -11,7 +11,7 @@ import Header from "./components/Header";
 function App() {
   return (
     <Router>
-      <Header />
+     <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/keranjang" element={<Cart />} />
@@ -20,7 +20,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
-        </Routes>
+      </Routes>
     </Router>
   );
 }
