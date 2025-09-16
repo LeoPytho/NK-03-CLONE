@@ -115,7 +115,7 @@ header {
   background-color: #f8f9fa;
 }
 
-/* Dropdown Styles - ENHANCED FIX */
+/* Dropdown Styles - IMPROVED FOR DESKTOP CUTOFF FIX */
 .dropdown {
   position: relative;
   z-index: 10000;
@@ -167,38 +167,19 @@ header {
   transition: all 0.3s ease;
   z-index: 10002;
   margin-top: 5px;
-  max-height: 300px;
-  overflow-y: auto;
+  max-width: calc(100vw - 40px); /* Prevent horizontal overflow */
+}
+
+/* Right-aligned dropdown for user menu and dropdowns near screen edge */
+.dropdown-menu.dropdown-menu-right {
+  left: auto;
+  right: 0;
 }
 
 .dropdown-menu.show {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-}
-
-/* Enhanced positioning fixes */
-.dropdown-menu-right {
-  left: auto !important;
-  right: 0 !important;
-  transform-origin: top right !important;
-}
-
-.dropdown-menu-up {
-  top: auto !important;
-  bottom: 100% !important;
-  margin-bottom: 5px !important;
-  margin-top: 0 !important;
-  transform: translateY(10px) !important;
-  transform-origin: bottom center !important;
-}
-
-.dropdown-menu-up.show {
-  transform: translateY(0) !important;
-}
-
-.dropdown-menu-right.dropdown-menu-up {
-  transform-origin: bottom right !important;
 }
 
 .dropdown-item {
@@ -210,7 +191,7 @@ header {
   transition: background-color 0.3s ease;
   position: relative;
   z-index: 10003;
-  white-space: nowrap;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 .dropdown-item:hover {
@@ -252,10 +233,7 @@ header {
   background-color: #f8f9fa;
   border-radius: 20px;
   padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 40px;
+  gap: 8px;
 }
 
 .user-btn:hover {
@@ -278,6 +256,15 @@ header {
   justify-content: center;
   font-weight: bold;
   border: 2px solid white;
+}
+
+/* Mobile/Desktop visibility classes */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
 }
 
 /* Mobile menu button - hidden by default */
@@ -411,16 +398,7 @@ header {
   z-index: 1;
 }
 
-/* Responsive adjustments */
-@media (min-width: 769px) {
-  /* Auto-adjust for dropdowns that might go off-screen horizontally */
-  .nav-menu .dropdown:nth-last-child(-n+2) .dropdown-menu {
-    left: auto;
-    right: 0;
-    transform-origin: top right;
-  }
-}
-
+/* Responsive */
 @media (max-width: 1024px) {
   .top-bar {
     padding: 12px 30px;
@@ -438,8 +416,9 @@ header {
     gap: 15px;
   }
   
+  /* Better dropdown positioning for tablets */
   .dropdown-menu {
-    min-width: 180px;
+    max-width: calc(100vw - 60px);
   }
 }
 
@@ -469,23 +448,18 @@ header {
     flex-shrink: 0;
   }
   
-  /* Enhanced mobile menu spacing for new items */
+  /* Show mobile account button, hide desktop dropdown */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  /* Mobile menu shows account-related links in navigation */
   .mobile-nav-links {
-    gap: 8px;
-  }
-  
-  .mobile-nav-link {
-    padding: 14px 16px;
-    font-size: 15px;
-  }
-  
-  .mobile-icons {
-    gap: 12px;
-  }
-  
-  .mobile-icon-button {
-    padding: 14px 15px;
-    font-size: 15px;
+    border-bottom: 1px solid #ddd;
   }
 }
 
@@ -513,38 +487,5 @@ header {
   .dropdown-item {
     padding: 10px 14px;
     font-size: 13px;
-  }
-  
-  .mobile-nav-link {
-    padding: 12px 15px;
-    font-size: 14px;
-  }
-  
-  .mobile-icon-button {
-    padding: 12px 15px;
-    font-size: 14px;
-  }
-  
-  .mobile-icon-button .icon {
-    font-size: 16px;
-  }
-}
-
-/* Additional viewport boundary detection */
-@media (max-height: 600px) {
-  .dropdown-menu {
-    max-height: 200px;
-    overflow-y: auto;
-  }
-}
-
-/* Ensure dropdowns work properly on touch devices */
-@media (hover: none) and (pointer: coarse) {
-  .dropdown-toggle:hover {
-    background-color: transparent;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f8f9fa;
   }
 }
