@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/header.css";
-import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
+import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes, FaShoppingBag, FaHeart } from "react-icons/fa";
 
 const Header = () => {
   const [cartCount, setCartCount] = useState(3);
@@ -8,13 +8,11 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdowns, setDropdowns] = useState({
     kategori: false,
-    akun: false,
     bantuan: false
   });
 
   const dropdownRefs = useRef({
     kategori: null,
-    akun: null,
     bantuan: null
   });
 
@@ -22,7 +20,6 @@ const Header = () => {
     setDropdowns(prev => {
       const newState = {
         kategori: dropdownName === 'kategori' ? !prev.kategori : false,
-        akun: dropdownName === 'akun' ? !prev.akun : false,
         bantuan: dropdownName === 'bantuan' ? !prev.bantuan : false
       };
       
@@ -59,7 +56,6 @@ const Header = () => {
       if (!isClickInsideDropdown) {
         setDropdowns({
           kategori: false,
-          akun: false,
           bantuan: false
         });
       }
@@ -79,7 +75,6 @@ const Header = () => {
       }
       setDropdowns({
         kategori: false,
-        akun: false,
         bantuan: false
       });
     };
@@ -98,12 +93,15 @@ const Header = () => {
     console.log("Notification clicked");
   };
 
+  const handleUserClick = () => {
+    console.log("User profile clicked");
+  };
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     // Close all dropdowns when mobile menu is toggled
     setDropdowns({
       kategori: false,
-      akun: false,
       bantuan: false
     });
   };
@@ -188,26 +186,10 @@ const Header = () => {
             )}
           </button>
 
-          {/* Dropdown Akun */}
-          <div 
-            className="dropdown"
-            ref={el => dropdownRefs.current.akun = el}
-          >
-            <button 
-              className="dropdown-toggle user-btn"
-              onClick={() => handleDropdownToggle('akun')}
-            >
-              <FaUser /> <FaChevronDown />
-            </button>
-            <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
-              <a href="#" className="dropdown-item">Profile Saya</a>
-              <a href="#" className="dropdown-item">Pesanan Saya</a>
-              <a href="#" className="dropdown-item">Wishlist</a>
-              <div className="dropdown-divider"></div>
-              <a href="#" className="dropdown-item">Login</a>
-              <a href="#" className="dropdown-item">Daftar</a>
-            </div>
-          </div>
+          {/* Simple User Icon - No Dropdown */}
+          <button className="icon-btn user-btn" onClick={handleUserClick}>
+            <FaUser />
+          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -239,9 +221,21 @@ const Header = () => {
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
             </button>
 
+            {/* Pesanan Saya - Only in Mobile */}
             <button className="mobile-icon-button">
+              <FaShoppingBag className="icon" />
+              <span>Pesanan Saya</span>
+            </button>
+
+            {/* Wishlist - Only in Mobile */}
+            <button className="mobile-icon-button">
+              <FaHeart className="icon" />
+              <span>Wishlist</span>
+            </button>
+
+            <button className="mobile-icon-button" onClick={handleUserClick}>
               <FaUser className="icon" />
-              <span>Akun Saya</span>
+              <span>Profile Saya</span>
             </button>
           </div>
           
