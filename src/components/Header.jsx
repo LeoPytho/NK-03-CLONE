@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/header.css";
 import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
 
@@ -12,12 +12,83 @@ const Header = () => {
     bantuan: false
   });
 
+  const dropdownRefs = useRef({
+    kategori: null,
+    akun: null,
+    bantuan: null
+  });
+
   const handleDropdownToggle = (dropdownName) => {
-    setDropdowns(prev => ({
-      ...prev,
-      [dropdownName]: !prev[dropdownName]
-    }));
+    setDropdowns(prev => {
+      const newState = {
+        kategori: dropdownName === 'kategori' ? !prev.kategori : false,
+        akun: dropdownName === 'akun' ? !prev.akun : false,
+        bantuan: dropdownName === 'bantuan' ? !prev.bantuan : false
+      };
+      
+      // Auto-adjust dropdown position to prevent cutoff
+      setTimeout(() => {
+        const dropdownElement = dropdownRefs.current[dropdownName];
+        if (dropdownElement && newState[dropdownName]) {
+          const dropdownMenu = dropdownElement.querySelector('.dropdown-menu');
+          if (dropdownMenu) {
+            const rect = dropdownMenu.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            
+            // If dropdown would go off-screen to the right, add right-align class
+            if (rect.right > viewportWidth - 10) {
+              dropdownMenu.classList.add('dropdown-menu-right');
+            } else {
+              dropdownMenu.classList.remove('dropdown-menu-right');
+            }
+          }
+        }
+      }, 10);
+      
+      return newState;
+    });
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isClickInsideDropdown = Object.values(dropdownRefs.current).some(ref => 
+        ref && ref.contains(event.target)
+      );
+      
+      if (!isClickInsideDropdown) {
+        setDropdowns({
+          kategori: false,
+          akun: false,
+          bantuan: false
+        });
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Close mobile menu and dropdowns when window is resized
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setIsMobileMenuOpen(false);
+      }
+      setDropdowns({
+        kategori: false,
+        akun: false,
+        bantuan: false
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleCartClick = () => {
     console.log("Cart clicked");
@@ -29,6 +100,12 @@ const Header = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+    // Close all dropdowns when mobile menu is toggled
+    setDropdowns({
+      kategori: false,
+      akun: false,
+      bantuan: false
+    });
   };
 
   return (
@@ -55,7 +132,10 @@ const Header = () => {
           <a href="#" className="nav-link">Beranda</a>
           
           {/* Dropdown Kategori */}
-          <div className="dropdown">
+          <div 
+            className="dropdown" 
+            ref={el => dropdownRefs.current.kategori = el}
+          >
             <button 
               className="dropdown-toggle"
               onClick={() => handleDropdownToggle('kategori')}
@@ -73,7 +153,10 @@ const Header = () => {
           <a href="#" className="nav-link">Promo</a>
           
           {/* Dropdown Bantuan */}
-          <div className="dropdown">
+          <div 
+            className="dropdown"
+            ref={el => dropdownRefs.current.bantuan = el}
+          >
             <button 
               className="dropdown-toggle"
               onClick={() => handleDropdownToggle('bantuan')}
@@ -106,14 +189,17 @@ const Header = () => {
           </button>
 
           {/* Dropdown Akun */}
-          <div className="dropdown">
+          <div 
+            className="dropdown"
+            ref={el => dropdownRefs.current.akun = el}
+          >
             <button 
               className="dropdown-toggle user-btn"
               onClick={() => handleDropdownToggle('akun')}
             >
               <FaUser /> <FaChevronDown />
             </button>
-            <div className={`dropdown-menu ${dropdowns.akun ? 'show' : ''}`}>
+            <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
               <a href="#" className="dropdown-item">Profile Saya</a>
               <a href="#" className="dropdown-item">Pesanan Saya</a>
               <a href="#" className="dropdown-item">Wishlist</a>
