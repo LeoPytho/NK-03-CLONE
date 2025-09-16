@@ -19,7 +19,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
-       <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </Router>
   );
