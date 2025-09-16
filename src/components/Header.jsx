@@ -3,18 +3,18 @@ import "../styles/header.css";
 import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
 
 const Header = () => {
-  const [cartCount, setCartCount] = useState(3); // Example cart count
-  const [notificationCount, setNotificationCount] = useState(2); // Example notification count
+  const [cartCount, setCartCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(2);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleCartClick = () => {
     console.log("Cart clicked");
-    // Add your cart functionality here
+    // Tambahkan fungsi keranjang di sini
   };
 
   const handleNotificationClick = () => {
     console.log("Notification clicked");
-    // Add your notification functionality here
+    // Tambahkan fungsi notifikasi di sini
   };
 
   const toggleMobileMenu = () => {
@@ -23,51 +23,49 @@ const Header = () => {
 
   return (
     <header className="header">
-      {/* Top Bar - Hidden on mobile */}
+      {/* Top Bar - sama seperti aslinya */}
       <div className="top-bar">
         <div className="contact-info">
           <div className="contact-item">
-            <FaPhone className="contact-icon" />
-            <span className="contact-text">0852-1514-7628</span>
+            <FaPhone className="contact-icon phone-icon" />
+            0852-1514-7628
           </div>
           <div className="contact-item">
             <FaEnvelope className="contact-icon" />
-            <span className="contact-text">support@nayrakuen.com</span>
+            support@nayrakuen.com
           </div>
         </div>
-        <div className="about-link">
-          <a href="#" className="about-text">Tentang Nayrakuen Shop</a>
+        <div>
+          <a href="#">Tentang Nayrakuen Shop</a>
         </div>
       </div>
 
-      {/* Main Navigation */}
+      {/* Navbar - sama seperti aslinya dengan tambahan responsif */}
       <nav className="navbar">
         <div className="nav-container">
-          {/* Logo */}
           <div className="logo">
-            <span className="logo-bold">Nayrakuen</span>
-            <span className="logo-normal">Shop</span>
+            <span className="logo-bold">Nayrakuen</span> Shop
           </div>
 
           {/* Desktop Icons */}
-          <div className="nav-icons desktop-icons">
+          <div className="desktop-icons">
             <button 
-              className="icon-button notification-btn"
+              className="icon-button"
               onClick={handleNotificationClick}
               aria-label="Notifikasi"
             >
-              <FaBell className="icon" />
+              <FaBell />
               {notificationCount > 0 && (
                 <span className="badge notification-badge">{notificationCount}</span>
               )}
             </button>
             
             <button 
-              className="icon-button cart-btn"
+              className="icon-button"
               onClick={handleCartClick}
-              aria-label="Keranjang Belanja"
+              aria-label="Keranjang"
             >
-              <FaShoppingCart className="icon" />
+              <FaShoppingCart />
               {cartCount > 0 && (
                 <span className="badge cart-badge">{cartCount}</span>
               )}
@@ -78,7 +76,6 @@ const Header = () => {
           <button 
             className="mobile-menu-btn"
             onClick={toggleMobileMenu}
-            aria-label="Menu"
           >
             {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
@@ -112,7 +109,7 @@ const Header = () => {
           
           <div className="mobile-contact">
             <div className="contact-item">
-              <FaPhone className="contact-icon" />
+              <FaPhone className="contact-icon phone-icon" />
               <span>0852-1514-7628</span>
             </div>
             <div className="contact-item">
