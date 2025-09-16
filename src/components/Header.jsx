@@ -3,7 +3,7 @@ import "../styles/header.css";
 import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
 
 const Header = () => {
-  const [cartCount, setCartCount] = useState(3);
+  const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(2);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdowns, setDropdowns] = useState({
@@ -17,6 +17,59 @@ const Header = () => {
     akun: null,
     bantuan: null
   });
+
+  // Function to get cart count from localStorage
+  const getCartCount = () => {
+    try {
+      const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
+      const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
+      return totalItems;
+    } catch (error) {
+      console.error('Error reading cart from localStorage:', error);
+      return 0;
+    }
+  };
+
+  // Update cart count on component mount and when localStorage changes
+  useEffect(() => {
+    const updateCartCount = () => {
+      setCartCount(getCartCount());
+    };
+
+    // Initial count
+    updateCartCount();
+
+    // Listen for storage changes (when cart is updated from other tabs/components)
+    const handleStorageChange = (e) => {
+      if (e.key === 'cart') {
+        updateCartCount();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Listen for custom cart update events (for same-tab updates)
+    const handleCartUpdate = () => {
+      updateCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
+
+  // Also update cart count periodically (optional - for better UX)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCartCount(getCartCount());
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDropdownToggle = (dropdownName) => {
     setDropdowns(prev => {
@@ -94,6 +147,8 @@ const Header = () => {
 
   const handleCartClick = () => {
     console.log("Cart clicked");
+    // You can navigate to cart page here
+    // navigate('/cart');
   };
 
   const handleNotificationClick = () => {
