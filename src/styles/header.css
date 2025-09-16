@@ -66,7 +66,7 @@ body {
 header {
   width: 100%;
   position: relative;
-  overflow: visible; /* Changed from hidden to visible */
+  overflow: visible;
   z-index: 1000;
 }
 
@@ -115,10 +115,10 @@ header {
   background-color: #f8f9fa;
 }
 
-/* Dropdown Styles - FIXED */
+/* Dropdown Styles - ENHANCED FIX */
 .dropdown {
   position: relative;
-  z-index: 10000; /* Increased z-index significantly */
+  z-index: 10000;
 }
 
 .dropdown-toggle {
@@ -135,7 +135,7 @@ header {
   gap: 5px;
   transition: all 0.3s ease;
   position: relative;
-  z-index: 10001; /* Higher than dropdown container */
+  z-index: 10001;
 }
 
 .dropdown-toggle:hover {
@@ -160,19 +160,15 @@ header {
   min-width: 200px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.3s ease;
-  z-index: 10002; /* Highest z-index for menu */
-  margin-top: 5px; /* Small gap from toggle button */
-}
-
-/* Right-aligned dropdown for user menu and dropdowns near screen edge */
-.dropdown-menu.dropdown-menu-right {
-  left: auto;
-  right: 0;
+  z-index: 10002;
+  margin-top: 5px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .dropdown-menu.show {
@@ -181,93 +177,28 @@ header {
   transform: translateY(0);
 }
 
-/* Auto-detect and adjust dropdown position to prevent cutoff */
-@media (min-width: 769px) {
-  .nav-menu .dropdown:last-child .dropdown-menu,
-  .nav-menu .dropdown:nth-last-child(2) .dropdown-menu {
-    left: auto;
-    right: 0;
-    transform-origin: top right;
-  }
-  
-  .nav-menu .dropdown:last-child .dropdown-menu.show,
-  .nav-menu .dropdown:nth-last-child(2) .dropdown-menu.show {
-    transform: translateY(0);
-  }
+/* Enhanced positioning fixes */
+.dropdown-menu-right {
+  left: auto !important;
+  right: 0 !important;
+  transform-origin: top right !important;
 }
 
-/* Auto-adjust dropdown position on small screens */
-@media (max-width: 768px) {
-  .dropdown-menu {
-    min-width: 180px;
-    max-width: calc(100vw - 40px);
-  }
-  
-  /* Always right-align dropdowns on mobile to prevent cutoff */
-  .nav-icons .dropdown-menu {
-    left: auto;
-    right: 0;
-  }
-  
-  /* Adjust for dropdowns that might go off-screen */
-  .dropdown-menu {
-    transform-origin: top right;
-  }
-  
-  .dropdown-menu.show {
-    transform: translateY(0);
-  }
-  
-  /* Ensure dropdown doesn't extend beyond screen */
-  .dropdown-menu.dropdown-menu-right {
-    right: 0;
-    left: auto;
-  }
-  
-  /* Mobile menu additional spacing for new items */
-  .mobile-icons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #ddd;
-  }
+.dropdown-menu-up {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-bottom: 5px !important;
+  margin-top: 0 !important;
+  transform: translateY(10px) !important;
+  transform-origin: bottom center !important;
 }
 
-@media (max-width: 480px) {
-  .dropdown-menu {
-    min-width: 160px;
-    max-width: calc(100vw - 30px);
-    font-size: 13px;
-  }
-  
-  .dropdown-item {
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-  
-  /* Force all nav-icons dropdowns to right-align on very small screens */
-  .nav-icons .dropdown-menu {
-    right: 0;
-    left: auto;
-  }
-  
-  /* Tighter spacing for mobile menu items */
-  .mobile-icons {
-    gap: 10px;
-  }
-  
-  .mobile-icon-button {
-    padding: 12px 15px;
-    font-size: 15px;
-  }
+.dropdown-menu-up.show {
+  transform: translateY(0) !important;
 }
 
-.dropdown-menu.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+.dropdown-menu-right.dropdown-menu-up {
+  transform-origin: bottom right !important;
 }
 
 .dropdown-item {
@@ -279,6 +210,7 @@ header {
   transition: background-color 0.3s ease;
   position: relative;
   z-index: 10003;
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {
@@ -370,7 +302,7 @@ header {
   right: 0;
   width: 100%;
   box-sizing: border-box;
-  z-index: 9999; /* High but lower than dropdowns */
+  z-index: 9999;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -471,7 +403,7 @@ header {
 /* Additional fix for content overlapping */
 .container {
   position: relative;
-  z-index: 1; /* Lower z-index than dropdowns */
+  z-index: 1;
 }
 
 .banner {
@@ -479,7 +411,16 @@ header {
   z-index: 1;
 }
 
-/* Responsive */
+/* Responsive adjustments */
+@media (min-width: 769px) {
+  /* Auto-adjust for dropdowns that might go off-screen horizontally */
+  .nav-menu .dropdown:nth-last-child(-n+2) .dropdown-menu {
+    left: auto;
+    right: 0;
+    transform-origin: top right;
+  }
+}
+
 @media (max-width: 1024px) {
   .top-bar {
     padding: 12px 30px;
@@ -495,6 +436,10 @@ header {
   
   .nav-icons {
     gap: 15px;
+  }
+  
+  .dropdown-menu {
+    min-width: 180px;
   }
 }
 
@@ -523,6 +468,25 @@ header {
     display: block;
     flex-shrink: 0;
   }
+  
+  /* Enhanced mobile menu spacing for new items */
+  .mobile-nav-links {
+    gap: 8px;
+  }
+  
+  .mobile-nav-link {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  
+  .mobile-icons {
+    gap: 12px;
+  }
+  
+  .mobile-icon-button {
+    padding: 14px 15px;
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -538,5 +502,49 @@ header {
   .mobile-menu {
     padding: 15px;
     width: 100%;
+  }
+  
+  .dropdown-menu {
+    min-width: 160px;
+    max-width: calc(100vw - 30px);
+    font-size: 13px;
+  }
+  
+  .dropdown-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  .mobile-nav-link {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+  
+  .mobile-icon-button {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+  
+  .mobile-icon-button .icon {
+    font-size: 16px;
+  }
+}
+
+/* Additional viewport boundary detection */
+@media (max-height: 600px) {
+  .dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+/* Ensure dropdowns work properly on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .dropdown-toggle:hover {
+    background-color: transparent;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
   }
 }
