@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/header.css";
-import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes, FaShoppingBag, FaHeart } from "react-icons/fa";
+import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
 
 const Header = () => {
   const [cartCount, setCartCount] = useState(3);
@@ -31,12 +31,20 @@ const Header = () => {
           if (dropdownMenu) {
             const rect = dropdownMenu.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
             
             // If dropdown would go off-screen to the right, add right-align class
             if (rect.right > viewportWidth - 10) {
               dropdownMenu.classList.add('dropdown-menu-right');
             } else {
               dropdownMenu.classList.remove('dropdown-menu-right');
+            }
+
+            // If dropdown would go off-screen at the bottom, add upward class
+            if (rect.bottom > viewportHeight - 10) {
+              dropdownMenu.classList.add('dropdown-menu-up');
+            } else {
+              dropdownMenu.classList.remove('dropdown-menu-up');
             }
           }
         }
@@ -186,7 +194,7 @@ const Header = () => {
             )}
           </button>
 
-          {/* Simple User Icon - No Dropdown */}
+          {/* Simple User Button (no dropdown) */}
           <button className="icon-btn user-btn" onClick={handleUserClick}>
             <FaUser />
           </button>
@@ -206,6 +214,9 @@ const Header = () => {
             <a href="#" className="mobile-nav-link">Aksesoris</a>
             <a href="#" className="mobile-nav-link">Promo</a>
             <a href="#" className="mobile-nav-link">FAQ</a>
+            {/* Added Pesanan Saya and Wishlist to mobile menu */}
+            <a href="#" className="mobile-nav-link">Pesanan Saya</a>
+            <a href="#" className="mobile-nav-link">Wishlist</a>
           </div>
           
           <div className="mobile-icons">
@@ -221,21 +232,9 @@ const Header = () => {
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
             </button>
 
-            {/* Pesanan Saya - Only in Mobile */}
-            <button className="mobile-icon-button">
-              <FaShoppingBag className="icon" />
-              <span>Pesanan Saya</span>
-            </button>
-
-            {/* Wishlist - Only in Mobile */}
-            <button className="mobile-icon-button">
-              <FaHeart className="icon" />
-              <span>Wishlist</span>
-            </button>
-
             <button className="mobile-icon-button" onClick={handleUserClick}>
               <FaUser className="icon" />
-              <span>Profile Saya</span>
+              <span>Login/Daftar</span>
             </button>
           </div>
           
