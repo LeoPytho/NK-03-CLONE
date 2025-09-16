@@ -6,6 +6,7 @@ import Checkout from "./pages/Checkout";
 import Success from "./pages/Success";
 import Order from "./pages/Order";
 import Header from "./components/Header";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
+       <Route path="/cart" element={<Cart />} />
       </Routes>
     </Router>
   );
