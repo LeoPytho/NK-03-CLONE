@@ -31,7 +31,8 @@ body {
   padding: 12px 40px;          
   display: flex;
   justify-content: space-between;
-  align-items: center;         
+  align-items: center;
+  width: 100%;         
 }
 
 .top-bar div {
@@ -55,6 +56,12 @@ body {
   top: 1px;
 }
 
+/* Header Container */
+header {
+  width: 100%;
+  position: relative;
+}
+
 /* Navbar */
 .navbar {
   background-color: white;
@@ -64,6 +71,7 @@ body {
   justify-content: space-between;
   align-items: center;
   position: relative;
+  width: 100%;
 }
 
 .logo {
@@ -346,6 +354,10 @@ body {
 
 /* Responsive */
 @media (max-width: 1024px) {
+  .top-bar {
+    padding: 12px 30px;
+  }
+  
   .navbar {
     padding: 20px 30px;
   }
@@ -360,8 +372,9 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* Hide top bar completely on mobile */
   .top-bar {
-    display: none;
+    display: none !important;
   }
   
   .navbar {
