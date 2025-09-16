@@ -32,14 +32,16 @@ const Header = () => {
         if (dropdownElement && newState[dropdownName]) {
           const dropdownMenu = dropdownElement.querySelector('.dropdown-menu');
           if (dropdownMenu) {
-            const rect = dropdownMenu.getBoundingClientRect();
+            const dropdownRect = dropdownElement.getBoundingClientRect();
+            const menuRect = dropdownMenu.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
             
-            // If dropdown would go off-screen to the right, add right-align class
-            if (rect.right > viewportWidth - 20) {
+            // Reset classes first
+            dropdownMenu.classList.remove('dropdown-menu-right');
+            
+            // Check if dropdown would go off-screen to the right
+            if (dropdownRect.left + 200 > viewportWidth - 20) {
               dropdownMenu.classList.add('dropdown-menu-right');
-            } else {
-              dropdownMenu.classList.remove('dropdown-menu-right');
             }
           }
         }
@@ -208,11 +210,6 @@ const Header = () => {
               <a href="#" className="dropdown-item">Daftar</a>
             </div>
           </div>
-
-          {/* Mobile Account Button - Only visible on mobile, no dropdown */}
-          <button className="icon-btn mobile-only">
-            <FaUser />
-          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -246,8 +243,8 @@ const Header = () => {
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
             </button>
 
-            <button className="mobile-icon-button">
-              <FaUser className="icon" />
+            {/* Mobile Account Button - No icon, just text */}
+            <button className="mobile-icon-button mobile-account-btn">
               <span>Akun Saya</span>
             </button>
           </div>
