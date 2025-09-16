@@ -67,6 +67,7 @@ header {
   width: 100%;
   position: relative;
   overflow-x: hidden;
+  z-index: 1000;
 }
 
 /* Navbar */
@@ -80,6 +81,7 @@ header {
   position: relative;
   width: 100%;
   box-sizing: border-box;
+  z-index: 1000;
 }
 
 .logo {
@@ -116,6 +118,7 @@ header {
 /* Dropdown Styles */
 .dropdown {
   position: relative;
+  z-index: 9999;
 }
 
 .dropdown-toggle {
@@ -160,7 +163,7 @@ header {
   visibility: hidden;
   transform: translateY(-10px);
   transition: all 0.3s ease;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 .dropdown-menu.show {
