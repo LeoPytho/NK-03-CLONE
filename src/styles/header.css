@@ -115,7 +115,7 @@ header {
   background-color: #f8f9fa;
 }
 
-/* Dropdown Styles - IMPROVED FOR DESKTOP CUTOFF FIX */
+/* Dropdown Styles - FIXED FOR DESKTOP CUTOFF */
 .dropdown {
   position: relative;
   z-index: 10000;
@@ -166,19 +166,24 @@ header {
   transform: translateY(-10px);
   transition: all 0.3s ease;
   z-index: 10002;
-  margin-top: 5px;
-  max-width: calc(100vw - 40px); /* Prevent horizontal overflow */
+  margin-top: 8px;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
-/* Right-aligned dropdown for user menu and dropdowns near screen edge */
+/* Right-aligned dropdown - FIXED positioning */
 .dropdown-menu.dropdown-menu-right {
   left: auto;
   right: 0;
+  transform-origin: top right;
 }
 
 .dropdown-menu.show {
   opacity: 1;
   visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-menu.dropdown-menu-right.show {
   transform: translateY(0);
 }
 
@@ -191,7 +196,7 @@ header {
   transition: background-color 0.3s ease;
   position: relative;
   z-index: 10003;
-  white-space: nowrap; /* Prevent text wrapping */
+  white-space: nowrap;
 }
 
 .dropdown-item:hover {
@@ -361,6 +366,12 @@ header {
   border: none;
 }
 
+/* Special styling for mobile account button without icon */
+.mobile-account-btn {
+  justify-content: center; /* Center the text since no icon */
+  text-align: center;
+}
+
 .mobile-contact {
   display: flex;
   flex-direction: column;
@@ -415,11 +426,6 @@ header {
   .nav-icons {
     gap: 15px;
   }
-  
-  /* Better dropdown positioning for tablets */
-  .dropdown-menu {
-    max-width: calc(100vw - 60px);
-  }
 }
 
 @media (max-width: 768px) {
@@ -456,11 +462,6 @@ header {
   .mobile-only {
     display: block;
   }
-  
-  /* Mobile menu shows account-related links in navigation */
-  .mobile-nav-links {
-    border-bottom: 1px solid #ddd;
-  }
 }
 
 @media (max-width: 480px) {
@@ -476,16 +477,5 @@ header {
   .mobile-menu {
     padding: 15px;
     width: 100%;
-  }
-  
-  .dropdown-menu {
-    min-width: 160px;
-    max-width: calc(100vw - 30px);
-    font-size: 13px;
-  }
-  
-  .dropdown-item {
-    padding: 10px 14px;
-    font-size: 13px;
   }
 }
