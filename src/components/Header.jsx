@@ -8,11 +8,13 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdowns, setDropdowns] = useState({
     kategori: false,
+    akun: false,
     bantuan: false
   });
 
   const dropdownRefs = useRef({
     kategori: null,
+    akun: null,
     bantuan: null
   });
 
@@ -20,6 +22,7 @@ const Header = () => {
     setDropdowns(prev => {
       const newState = {
         kategori: dropdownName === 'kategori' ? !prev.kategori : false,
+        akun: dropdownName === 'akun' ? !prev.akun : false,
         bantuan: dropdownName === 'bantuan' ? !prev.bantuan : false
       };
       
@@ -31,20 +34,12 @@ const Header = () => {
           if (dropdownMenu) {
             const rect = dropdownMenu.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
             
             // If dropdown would go off-screen to the right, add right-align class
-            if (rect.right > viewportWidth - 10) {
+            if (rect.right > viewportWidth - 20) {
               dropdownMenu.classList.add('dropdown-menu-right');
             } else {
               dropdownMenu.classList.remove('dropdown-menu-right');
-            }
-
-            // If dropdown would go off-screen at the bottom, add upward class
-            if (rect.bottom > viewportHeight - 10) {
-              dropdownMenu.classList.add('dropdown-menu-up');
-            } else {
-              dropdownMenu.classList.remove('dropdown-menu-up');
             }
           }
         }
@@ -64,6 +59,7 @@ const Header = () => {
       if (!isClickInsideDropdown) {
         setDropdowns({
           kategori: false,
+          akun: false,
           bantuan: false
         });
       }
@@ -83,6 +79,7 @@ const Header = () => {
       }
       setDropdowns({
         kategori: false,
+        akun: false,
         bantuan: false
       });
     };
@@ -101,15 +98,12 @@ const Header = () => {
     console.log("Notification clicked");
   };
 
-  const handleUserClick = () => {
-    console.log("User profile clicked");
-  };
-
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     // Close all dropdowns when mobile menu is toggled
     setDropdowns({
       kategori: false,
+      akun: false,
       bantuan: false
     });
   };
@@ -194,8 +188,29 @@ const Header = () => {
             )}
           </button>
 
-          {/* Simple User Button (no dropdown) */}
-          <button className="icon-btn user-btn" onClick={handleUserClick}>
+          {/* Dropdown Akun - Only visible on desktop */}
+          <div 
+            className="dropdown desktop-only"
+            ref={el => dropdownRefs.current.akun = el}
+          >
+            <button 
+              className="dropdown-toggle user-btn"
+              onClick={() => handleDropdownToggle('akun')}
+            >
+              <FaUser /> <FaChevronDown />
+            </button>
+            <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
+              <a href="#" className="dropdown-item">Profile Saya</a>
+              <a href="#" className="dropdown-item">Pesanan Saya</a>
+              <a href="#" className="dropdown-item">Wishlist</a>
+              <div className="dropdown-divider"></div>
+              <a href="#" className="dropdown-item">Login</a>
+              <a href="#" className="dropdown-item">Daftar</a>
+            </div>
+          </div>
+
+          {/* Mobile Account Button - Only visible on mobile, no dropdown */}
+          <button className="icon-btn mobile-only">
             <FaUser />
           </button>
         </div>
@@ -214,7 +229,6 @@ const Header = () => {
             <a href="#" className="mobile-nav-link">Aksesoris</a>
             <a href="#" className="mobile-nav-link">Promo</a>
             <a href="#" className="mobile-nav-link">FAQ</a>
-            {/* Added Pesanan Saya and Wishlist to mobile menu */}
             <a href="#" className="mobile-nav-link">Pesanan Saya</a>
             <a href="#" className="mobile-nav-link">Wishlist</a>
           </div>
@@ -232,9 +246,9 @@ const Header = () => {
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
             </button>
 
-            <button className="mobile-icon-button" onClick={handleUserClick}>
+            <button className="mobile-icon-button">
               <FaUser className="icon" />
-              <span>Login/Daftar</span>
+              <span>Akun Saya</span>
             </button>
           </div>
           
