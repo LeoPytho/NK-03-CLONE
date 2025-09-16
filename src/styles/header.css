@@ -169,6 +169,60 @@ header {
   margin-top: 5px; /* Small gap from toggle button */
 }
 
+/* Right-aligned dropdown for user menu and dropdowns near screen edge */
+.dropdown-menu.dropdown-menu-right {
+  left: auto;
+  right: 0;
+}
+
+/* Auto-adjust dropdown position on small screens */
+@media (max-width: 768px) {
+  .dropdown-menu {
+    min-width: 180px;
+    max-width: calc(100vw - 40px);
+  }
+  
+  /* Always right-align dropdowns on mobile to prevent cutoff */
+  .nav-icons .dropdown-menu {
+    left: auto;
+    right: 0;
+  }
+  
+  /* Adjust for dropdowns that might go off-screen */
+  .dropdown-menu {
+    transform-origin: top right;
+  }
+  
+  .dropdown-menu.show {
+    transform: translateY(0);
+  }
+  
+  /* Ensure dropdown doesn't extend beyond screen */
+  .dropdown-menu.dropdown-menu-right {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-menu {
+    min-width: 160px;
+    max-width: calc(100vw - 30px);
+    font-size: 13px;
+  }
+  
+  .dropdown-item {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  /* Force all nav-icons dropdowns to right-align on very small screens */
+  .nav-icons .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
 .dropdown-menu.show {
   opacity: 1;
   visibility: visible;
