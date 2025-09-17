@@ -8,6 +8,7 @@ import Wishlist from "./pages/Wishlist";
 import Success from "./pages/Success";
 import Order from "./pages/Order";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
       </Routes>
+     <Footer />
     </Router>
   );
 }
