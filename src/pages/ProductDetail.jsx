@@ -8,6 +8,8 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
@@ -28,6 +30,9 @@ function ProductDetail() {
           } else {
             setMainImage(data.image_url);
           }
+          
+          // Cek apakah produk sudah ada di wishlist
+          checkWishlistStatus(data.id);
         } else {
           setProduct(null);
         }
@@ -41,6 +46,18 @@ function ProductDetail() {
 
     fetchProduct();
   }, [id]);
+
+  // Function untuk mengecek status wishlist
+  const checkWishlistStatus = (productId) => {
+    try {
+      const existingWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      const isWishlisted = existingWishlist.some(item => item.id === productId);
+      setIsInWishlist(isWishlisted);
+    } catch (error) {
+      console.error('Error checking wishlist status:', error);
+      setIsInWishlist(false);
+    }
+  };
 
   if (!loading && !product) return <p>Produk tidak ditemukan</p>;
 
@@ -82,6 +99,9 @@ function ProductDetail() {
       // Simpan kembali ke localStorage
       localStorage.setItem('cart', JSON.stringify(existingCart));
       
+      // Trigger event untuk update cart count di header
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
+      
       // Tampilkan notifikasi atau feedback
       console.log('Produk berhasil ditambahkan ke keranjang!');
       
@@ -95,6 +115,58 @@ function ProductDetail() {
       console.error('Gagal menambahkan ke keranjang:', error);
       setAddingToCart(false);
       showToast('Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+    }
+  };
+
+  const handleToggleWishlist = () => {
+    setTogglingWishlist(true);
+    
+    try {
+      // Ambil data wishlist yang sudah ada dari localStorage
+      const existingWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      
+      // Data produk yang akan disimpan
+      const productToAdd = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image_url: Array.isArray(product.image_url) ? product.image_url[0] : product.image_url,
+        addedAt: new Date().toISOString()
+      };
+      
+      // Cek apakah produk sudah ada di wishlist
+      const existingProductIndex = existingWishlist.findIndex(item => item.id === product.id);
+      
+      if (existingProductIndex > -1) {
+        // Jika sudah ada, hapus dari wishlist
+        existingWishlist.splice(existingProductIndex, 1);
+        setIsInWishlist(false);
+        
+        setTimeout(() => {
+          setTogglingWishlist(false);
+          showToast('Produk dihapus dari wishlist!', 'success');
+        }, 500);
+      } else {
+        // Jika belum ada, tambah ke wishlist
+        existingWishlist.push(productToAdd);
+        setIsInWishlist(true);
+        
+        setTimeout(() => {
+          setTogglingWishlist(false);
+          showToast('Produk ditambahkan ke wishlist!', 'success');
+        }, 500);
+      }
+      
+      // Simpan kembali ke localStorage
+      localStorage.setItem('wishlist', JSON.stringify(existingWishlist));
+      
+      // Trigger event untuk update wishlist count jika ada
+      window.dispatchEvent(new CustomEvent('wishlistUpdated'));
+      
+    } catch (error) {
+      console.error('Gagal mengubah status wishlist:', error);
+      setTogglingWishlist(false);
+      showToast('Gagal mengubah status wishlist. Silakan coba lagi.', 'error');
     }
   };
 
@@ -139,6 +211,31 @@ function ProductDetail() {
                   alt={product.name}
                   className="product-image"
                 />
+
+                {/* Wishlist Button - positioned on top of image */}
+                <button
+                  className={`btn-wishlist ${isInWishlist ? 'wishlisted' : ''} ${togglingWishlist ? 'loading' : ''}`}
+                  onClick={handleToggleWishlist}
+                  disabled={togglingWishlist}
+                  title={isInWishlist ? 'Hapus dari Wishlist' : 'Tambah ke Wishlist'}
+                >
+                  {togglingWishlist ? (
+                    <span className="wishlist-loading">⏳</span>
+                  ) : (
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill={isInWishlist ? "#ff6b6b" : "none"}
+                      stroke={isInWishlist ? "#ff6b6b" : "#666"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  )}
+                </button>
 
                 {Array.isArray(product.image_url) &&
                   product.image_url.length > 1 && (
