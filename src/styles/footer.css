@@ -1,9 +1,4 @@
-/* Reset dasar biar tidak ada ruang kosong */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
+
 
 /* Footer Styles */
 .footer {
