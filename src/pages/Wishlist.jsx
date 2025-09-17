@@ -117,7 +117,7 @@ function Wishlist() {
       )}
 
       <div className="wishlist-header">
-        <h1>❤️ Wishlist Saya</h1>
+        <h1>Wishlist</h1>
         <p>{wishlistItems.length} produk dalam wishlist</p>
       </div>
 
@@ -170,7 +170,7 @@ function Wishlist() {
                     onClick={() => removeFromWishlist(item.id, item.name)}
                     title="Hapus dari wishlist"
                   >
-                    🗑️
+                    Hapus
                   </button>
                 </div>
               </div>
