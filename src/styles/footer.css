@@ -1,41 +1,42 @@
 /* Footer Styles */
 .footer {
   width: 100%;
-  margin-top: 60px;
+  margin-top: 40px; /* dikurangi */
   background: linear-gradient(135deg, #7b1c1c 0%, #5a1414 100%);
   color: white;
+  font-size: 13px; /* lebih kecil */
 }
 
 /* Footer Container */
 .footer-container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 20px; /* diperkecil */
 }
 
 /* Main Footer Content */
 .footer-main {
-  padding: 50px 0 30px;
+  padding: 30px 0 20px; /* diperkecil */
 }
 
 .footer-main .footer-container {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
-  gap: 40px;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr; /* proporsi lebih kecil */
+  gap: 25px; /* dikurangi */
 }
 
 .footer-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px; /* dikurangi */
 }
 
 /* Footer Logo */
 .footer-logo {
-  font-size: 32px;
+  font-size: 24px; /* diperkecil */
   color: white;
   font-weight: normal;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .footer-logo .logo-bold {
@@ -43,20 +44,20 @@
 }
 
 .footer-description {
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.6;
-  font-size: 14px;
-  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  font-size: 13px; /* lebih kecil */
+  margin-bottom: 8px;
 }
 
 /* Section Titles */
 .footer-title {
-  font-size: 18px;
+  font-size: 15px; /* diperkecil */
   font-weight: bold;
   color: white;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Footer Links */
@@ -66,15 +67,15 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .footer-links li button {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  padding: 6px 0;
+  font-size: 13px;
+  padding: 4px 0;
   cursor: pointer;
   text-align: left;
   transition: all 0.3s ease;
@@ -83,26 +84,25 @@
 
 .footer-links li button:hover {
   color: white;
-  transform: translateX(5px);
+  transform: translateX(3px);
 }
 
 /* Social Media Section */
 .social-media h4 {
-  font-size: 16px;
-  color: white;
-  margin-bottom: 15px;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .social-links {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .social-btn {
-  width: 45px;
-  height: 45px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
@@ -110,80 +110,60 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
 }
 
 .social-btn svg {
-  font-size: 20px;
+  font-size: 16px;
   color: white;
 }
 
+/* Hover effects tetap */
 .social-btn:hover {
-  transform: translateY(-3px) scale(1.1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
-
 .social-btn.instagram:hover {
   background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
   border-color: #dc2743;
 }
-
-.social-btn.twitter:hover {
-  background: #1da1f2;
-  border-color: #1da1f2;
-}
-
-.social-btn.tiktok:hover {
-  background: #000;
-  border-color: #ff0050;
-}
-
-.social-btn.facebook:hover {
-  background: #1877f2;
-  border-color: #1877f2;
-}
+.social-btn.twitter:hover { background: #1da1f2; border-color: #1da1f2; }
+.social-btn.tiktok:hover { background: #000; border-color: #ff0050; }
+.social-btn.facebook:hover { background: #1877f2; border-color: #1877f2; }
 
 /* Contact Info */
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .contact-item {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
+  gap: 10px;
 }
 
 .contact-icon {
-  font-size: 18px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
-  margin-top: 2px;
   flex-shrink: 0;
-}
-
-.contact-icon.phone-icon {
-  transform: rotate(90deg);
-  font-size: 16px;
 }
 
 .contact-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .contact-label {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 500;
 }
 
 .contact-value {
-  font-size: 14px;
+  font-size: 13px;
   color: white;
   text-decoration: none;
   transition: color 0.3s ease;
@@ -196,76 +176,51 @@
 
 /* Newsletter */
 .newsletter {
-  margin-top: 15px;
-  padding-top: 20px;
+  margin-top: 10px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .newsletter h4 {
-  font-size: 16px;
-  color: white;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .newsletter p {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 15px;
-  line-height: 1.4;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 10px;
 }
 
 .newsletter-form {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 6px;
 }
 
 .newsletter-input {
   flex: 1;
-  padding: 12px 15px;
+  padding: 8px 10px;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 14px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.newsletter-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.newsletter-input:focus {
-  outline: none;
-  border-color: white;
-  background: rgba(255, 255, 255, 0.15);
+  font-size: 13px;
 }
 
 .newsletter-btn {
-  padding: 12px 15px;
+  padding: 8px 10px;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.newsletter-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.newsletter-btn svg {
-  font-size: 16px;
+  font-size: 13px;
 }
 
 /* Footer Bottom */
 .footer-bottom {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px 0;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px 0; /* diperkecil */
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -274,134 +229,73 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 10px;
 }
 
 .copyright {
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin: 0;
 }
 
 .footer-bottom-links {
   display: flex;
-  align-items: center;
-  gap: 15px;
+  gap: 10px;
 }
 
 .footer-bottom-links button {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  transition: color 0.3s ease;
 }
 
 .footer-bottom-links button:hover {
   color: white;
 }
 
-.divider {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 12px;
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .footer-container {
-    padding: 0 30px;
-  }
-  
   .footer-main .footer-container {
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .footer-container {
-    padding: 0 20px;
-  }
-  
-  .footer-main {
-    padding: 40px 0 20px;
-  }
-  
   .footer-main .footer-container {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: 20px;
   }
-  
-  .footer-logo {
-    font-size: 28px;
-    text-align: center;
-  }
-  
+  .footer-logo,
   .footer-description {
     text-align: center;
   }
-  
   .social-links {
     justify-content: center;
   }
-  
   .footer-bottom-content {
     flex-direction: column;
     text-align: center;
-    gap: 15px;
-  }
-  
-  .newsletter-form {
-    flex-direction: column;
     gap: 10px;
   }
-  
-  .newsletter-input {
-    width: 100%;
+  .newsletter-form {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 480px) {
-  .footer-container {
-    padding: 0 15px;
-  }
-  
-  .footer-main {
-    padding: 30px 0 15px;
-  }
-  
-  .footer-section {
-    gap: 15px;
-  }
-  
   .footer-logo {
-    font-size: 24px;
+    font-size: 20px;
   }
-  
   .footer-title {
-    font-size: 16px;
+    font-size: 14px;
   }
-  
   .social-btn {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
   }
-  
   .social-btn svg {
-    font-size: 18px;
-  }
-  
-  .contact-item {
-    gap: 12px;
-  }
-  
-  .footer-bottom {
-    padding: 15px 0;
-  }
-  
-  .footer-bottom-links {
-    flex-wrap: wrap;
-    justify-content: center;
+    font-size: 14px;
   }
 }
