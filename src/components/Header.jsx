@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "../styles/header.css";
 import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
 
-// Di dalam component Anda
-const navigate = useNavigate();
 const Header = () => {
+  const navigate = useNavigate(); // Initialize navigate hook
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(2);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -148,11 +147,12 @@ const Header = () => {
     };
   }, []);
 
+  // Modified handleCartClick function to navigate to /keranjang
   const handleCartClick = () => {
-    console.log("Cart clicked");
-    navigate('/keranjang');
+    console.log("Cart clicked - navigating to /keranjang");
+    navigate('/keranjang'); // Navigate to cart page
   };
-  
+
   const handleNotificationClick = () => {
     console.log("Notification clicked");
   };
@@ -165,6 +165,15 @@ const Header = () => {
       akun: false,
       bantuan: false
     });
+  };
+
+  // Function to handle logo/beranda click
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
+  const handleBerandaClick = () => {
+    navigate('/');
   };
 
   return (
@@ -182,13 +191,13 @@ const Header = () => {
 
       {/* Navbar */}
       <nav className="navbar">
-        <div className="logo">
+        <div className="logo" onClick={handleLogoClick} style={{cursor: 'pointer'}}>
           <span className="logo-bold">Nayrakuen</span> Shop
         </div>
 
         {/* Desktop Navigation Menu */}
         <div className="nav-menu">
-          <a href="/" className="nav-link">Beranda</a>
+          <a href="#" className="nav-link" onClick={handleBerandaClick}>Beranda</a>
           
           {/* Dropdown Kategori */}
           <div 
@@ -277,7 +286,7 @@ const Header = () => {
         {/* Mobile Menu */}
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-nav-links">
-            <a href="#" className="mobile-nav-link">Beranda</a>
+            <a href="#" className="mobile-nav-link" onClick={handleBerandaClick}>Beranda</a>
             <a href="#" className="mobile-nav-link">Jersey Sepak Bola</a>
             <a href="#" className="mobile-nav-link">Merchandise</a>
             <a href="#" className="mobile-nav-link">Aksesoris</a>
