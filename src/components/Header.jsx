@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/header.css";
 import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
+// Di dalam component Anda
+const navigate = useNavigate();
 const Header = () => {
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(2);
@@ -147,10 +150,9 @@ const Header = () => {
 
   const handleCartClick = () => {
     console.log("Cart clicked");
-    // You can navigate to cart page here
-    // navigate('/cart');
+    navigate('/keranjang');
   };
-
+  
   const handleNotificationClick = () => {
     console.log("Notification clicked");
   };
@@ -186,7 +188,7 @@ const Header = () => {
 
         {/* Desktop Navigation Menu */}
         <div className="nav-menu">
-          <a href="#" className="nav-link">Beranda</a>
+          <a href="/" className="nav-link">Beranda</a>
           
           {/* Dropdown Kategori */}
           <div 
