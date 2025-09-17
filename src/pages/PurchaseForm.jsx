@@ -45,54 +45,39 @@ function PurchaseForm() {
   }, [id]);
 
   // Function untuk search alamat dari HERE Maps API
-const searchAddress = async (query) => {
-  if (query.length < 3) {
-    setAddressSuggestions([]);
-    setShowSuggestions(false);
-    return;
-  }
+  const searchAddress = async (query) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
 
-  setSearchingAddress(true);
-  try {
-    const apiKey = "ZcgqQFaE9azO73XJTasyhgHSVBST-aHpmj-VF4UM6sY"; // ganti dengan API Key HERE kamu
-    const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?at=-6.2,106.8&q=${encodeURIComponent(
-      query
-    )}&limit=5&apiKey=${apiKey}`;
+    setSearchingAddress(true);
+    try {
+      const apiKey = "YOUR_HERE_API_KEY"; // ganti dengan API Key HERE kamu
+      const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?at=-6.2,106.8&q=${encodeURIComponent(
+        query
+      )}&limit=5&apiKey=${apiKey}`;
 
-    const res = await fetch(url);
-    const data = await res.json();
+      const res = await fetch(url);
+      const data = await res.json();
 
-    // Filter hanya alamat/tempat yang ada address
-    const suggestions = data.items.filter(
-      (item) => item.address && item.address.label
-    );
+      // Filter hanya alamat/tempat yang punya address
+      const suggestions = data.items.filter(
+        (item) => item.address && item.address.label
+      );
 
-    setAddressSuggestions(suggestions);
-    setShowSuggestions(suggestions.length > 0);
-  } catch (err) {
-    console.error("Error searching address:", err);
-    setAddressSuggestions([]);
-    setShowSuggestions(false);
-  } finally {
-    setSearchingAddress(false);
-  }
-};
+      setAddressSuggestions(suggestions);
+      setShowSuggestions(suggestions.length > 0);
+    } catch (err) {
+      console.error("Error searching address:", err);
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setSearchingAddress(false);
+    }
+  };
 
-// Function untuk select alamat dari suggestion
-const selectAddress = (selectedAddress) => {
-  setForm({
-    ...form,
-    alamat: selectedAddress.address.label, // ambil label alamat dari HERE
-  });
-  setShowSuggestions(false);
-  setAddressSuggestions([]);
-  console.log(
-    "Selected address - Lat:",
-    selectedAddress.position?.lat,
-    "Lon:",
-    selectedAddress.position?.lng
-  );
-};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({
@@ -110,11 +95,16 @@ const selectAddress = (selectedAddress) => {
   const selectAddress = (selectedAddress) => {
     setForm({
       ...form,
-      alamat: selectedAddress.display_name,
+      alamat: selectedAddress.address.label,
     });
     setShowSuggestions(false);
     setAddressSuggestions([]);
-    console.log("Selected address - Lat:", selectedAddress.lat, "Lon:", selectedAddress.lon);
+    console.log(
+      "Selected address - Lat:",
+      selectedAddress.position?.lat,
+      "Lon:",
+      selectedAddress.position?.lng
+    );
   };
 
   // Function untuk hide suggestions ketika click outside
@@ -157,8 +147,8 @@ const selectAddress = (selectedAddress) => {
       let dataToSave;
 
       // Gabungkan alamat dan detail alamat
-      const fullAddress = form.detail_alamat 
-        ? `${form.alamat}, ${form.detail_alamat}` 
+      const fullAddress = form.detail_alamat
+        ? `${form.alamat}, ${form.detail_alamat}`
         : form.alamat;
 
       if (result.status && result.count > 0) {
@@ -166,7 +156,7 @@ const selectAddress = (selectedAddress) => {
         dataToSave = {
           customer_id: existing.customer_id,
           nama: existing.nama,
-          alamat: fullAddress, // Gunakan alamat yang sudah digabung
+          alamat: fullAddress,
           nomor_hp: existing.nomor_hp,
           email: existing.email,
           member: existing.member,
@@ -178,8 +168,8 @@ const selectAddress = (selectedAddress) => {
           email: form.email,
           nama: form.nama,
           nomor_hp: form.nomor_hp,
-          alamat: fullAddress, // Gunakan alamat yang sudah digabung
-          member: form.member, // langsung ambil value select
+          alamat: fullAddress,
+          member: form.member,
         };
       }
 
@@ -245,7 +235,7 @@ const selectAddress = (selectedAddress) => {
             />
           </label>
           
-          {/* Address field with OpenStreetMap integration */}
+          {/* Address field with HERE Maps integration */}
           <label>
             Alamat Utama
             <div className="address-input-container" style={{ position: 'relative' }}>
@@ -305,7 +295,7 @@ const selectAddress = (selectedAddress) => {
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
                     >
-                      {address.display_name}
+                      {address.address.label}
                     </li>
                   ))}
                 </ul>
