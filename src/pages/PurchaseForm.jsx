@@ -44,31 +44,55 @@ function PurchaseForm() {
     fetchProduct();
   }, [id]);
 
-  // Function untuk search alamat dari OpenStreetMap
-  const searchAddress = async (query) => {
-    if (query.length < 3) {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
+  // Function untuk search alamat dari HERE Maps API
+const searchAddress = async (query) => {
+  if (query.length < 3) {
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+    return;
+  }
 
-    setSearchingAddress(true);
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&countrycodes=id&limit=5`;
-      const res = await fetch(url);
-      const data = await res.json();
-      
-      setAddressSuggestions(data);
-      setShowSuggestions(data.length > 0);
-    } catch (err) {
-      console.error("Error searching address:", err);
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setSearchingAddress(false);
-    }
-  };
+  setSearchingAddress(true);
+  try {
+    const apiKey = "ZcgqQFaE9azO73XJTasyhgHSVBST-aHpmj-VF4UM6sY"; // ganti dengan API Key HERE kamu
+    const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?at=-6.2,106.8&q=${encodeURIComponent(
+      query
+    )}&limit=5&apiKey=${apiKey}`;
 
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // Filter hanya alamat/tempat yang ada address
+    const suggestions = data.items.filter(
+      (item) => item.address && item.address.label
+    );
+
+    setAddressSuggestions(suggestions);
+    setShowSuggestions(suggestions.length > 0);
+  } catch (err) {
+    console.error("Error searching address:", err);
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  } finally {
+    setSearchingAddress(false);
+  }
+};
+
+// Function untuk select alamat dari suggestion
+const selectAddress = (selectedAddress) => {
+  setForm({
+    ...form,
+    alamat: selectedAddress.address.label, // ambil label alamat dari HERE
+  });
+  setShowSuggestions(false);
+  setAddressSuggestions([]);
+  console.log(
+    "Selected address - Lat:",
+    selectedAddress.position?.lat,
+    "Lon:",
+    selectedAddress.position?.lng
+  );
+};
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({
