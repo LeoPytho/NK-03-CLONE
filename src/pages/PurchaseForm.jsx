@@ -54,7 +54,7 @@ function PurchaseForm() {
 
     setSearchingAddress(true);
     try {
-      const apiKey = "YOUR_HERE_API_KEY"; // ganti dengan API Key HERE kamu
+      const apiKey = "ZcgqQFaE9azO73XJTasyhgHSVBST-aHpmj-VF4UM6sY"; // ganti dengan API Key HERE kamu
       const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?at=-6.2,106.8&q=${encodeURIComponent(
         query
       )}&limit=5&apiKey=${apiKey}`;
