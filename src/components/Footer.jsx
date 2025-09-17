@@ -8,7 +8,6 @@ import {
 } from "react-icons/fa";
 
 const Footer = () => {
-
   const handleSocialClick = (platform) => {
     console.log(`Navigating to ${platform}`);
     // You can add actual social media links here
@@ -26,18 +25,19 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-container">
-        {/* Logo */}
+        {/* Logo - Left Side */}
         <div className="footer-logo">
           <span className="logo-bold">Nayrakuen</span> Shop
         </div>
         
-        {/* Social Media */}
+        {/* Social Media - Right Side */}
         <div className="social-media">
           <div className="social-links">
             <button 
               className="social-btn instagram"
               onClick={() => handleSocialClick('instagram')}
               title="Instagram"
+              aria-label="Visit our Instagram page"
             >
               <FaInstagram />
             </button>
@@ -45,6 +45,7 @@ const Footer = () => {
               className="social-btn twitter"
               onClick={() => handleSocialClick('twitter')}
               title="Twitter/X"
+              aria-label="Visit our Twitter page"
             >
               <FaTwitter />
             </button>
@@ -52,6 +53,7 @@ const Footer = () => {
               className="social-btn tiktok"
               onClick={() => handleSocialClick('tiktok')}
               title="TikTok"
+              aria-label="Visit our TikTok page"
             >
               <FaTiktok />
             </button>
@@ -59,13 +61,14 @@ const Footer = () => {
               className="social-btn facebook"
               onClick={() => handleSocialClick('facebook')}
               title="Facebook"
+              aria-label="Visit our Facebook page"
             >
               <FaFacebook />
             </button>
           </div>
         </div>
-
-        {/* Copyright */}
+        
+        {/* Copyright - Bottom Center */}
         <div className="copyright">
           &copy; 2024 Nayrakuen Shop. All rights reserved.
         </div>
