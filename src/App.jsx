@@ -24,7 +24,6 @@ function App() {
         <Route path="/success" element={<Success />} />
         <Route path="/order" element={<Order />} />
       </Routes>
-     <Footer />
     </Router>
   );
 }
