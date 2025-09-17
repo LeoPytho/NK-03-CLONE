@@ -47,16 +47,48 @@ function Wishlist() {
     showToast(`${productName} berhasil dihapus dari wishlist`);
   };
 
+  const addToCart = (item) => {
+    try {
+      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      
+      const productToAdd = {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image_url: item.image_url,
+        quantity: 1,
+        addedAt: new Date().toISOString()
+      };
+      
+      const existingProductIndex = existingCart.findIndex(cartItem => cartItem.id === item.id);
+      
+      if (existingProductIndex > -1) {
+        existingCart[existingProductIndex].quantity += 1;
+        showToast(`${item.name} sudah ada di keranjang, jumlah ditambah`);
+      } else {
+        existingCart.push(productToAdd);
+        showToast(`${item.name} berhasil ditambahkan ke keranjang`);
+      }
+      
+      localStorage.setItem('cart', JSON.stringify(existingCart));
+      window.dispatchEvent(new CustomEvent('cartUpdated'));
+      
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      showToast('Gagal menambahkan ke keranjang. Silakan coba lagi.', 'error');
+    }
+  };
+
   const handleBuyItem = (item) => {
     navigate(`/purchase/${item.id}`);
   };
 
-  const handleViewProduct = (item) => {
-    navigate(`/product/${item.id}`);
-  };
-
   const continueShopping = () => {
     navigate('/');
+  };
+
+  const viewProduct = (item) => {
+    navigate(`/product/${item.id}`);
   };
 
   if (loading) {
@@ -86,7 +118,7 @@ function Wishlist() {
 
       <div className="wishlist-header">
         <h1>❤️ Wishlist Saya</h1>
-        <p>{wishlistItems.length} produk tersimpan</p>
+        <p>{wishlistItems.length} produk dalam wishlist</p>
       </div>
 
       {wishlistItems.length === 0 ? (
@@ -103,12 +135,15 @@ function Wishlist() {
           <div className="wishlist-items">
             {wishlistItems.map((item) => (
               <div key={item.id} className="wishlist-item">
-                <div className="wishlist-item-image" onClick={() => handleViewProduct(item)}>
+                <div className="wishlist-item-image" onClick={() => viewProduct(item)}>
                   <img src={item.image_url} alt={item.name} />
+                  <div className="wishlist-overlay">
+                    <span>Lihat Detail</span>
+                  </div>
                 </div>
                 
                 <div className="wishlist-item-details">
-                  <h3 className="wishlist-item-name" onClick={() => handleViewProduct(item)}>
+                  <h3 className="wishlist-item-name" onClick={() => viewProduct(item)}>
                     {item.name}
                   </h3>
                   <p className="wishlist-item-price">Rp {item.price.toLocaleString()}</p>
@@ -119,44 +154,47 @@ function Wishlist() {
 
                 <div className="wishlist-item-actions">
                   <button 
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => addToCart(item)}
+                  >
+                    + Keranjang
+                  </button>
+                  <button 
+                    className="btn btn-success btn-sm"
                     onClick={() => handleBuyItem(item)}
                   >
                     Beli Sekarang
                   </button>
                   <button 
-                    className="btn btn-outline"
-                    onClick={() => handleViewProduct(item)}
-                  >
-                    Lihat Detail
-                  </button>
-                  <button 
-                    className="btn btn-danger btn-remove"
+                    className="btn btn-danger btn-sm"
                     onClick={() => removeFromWishlist(item.id, item.name)}
                     title="Hapus dari wishlist"
                   >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
+                    🗑️
                   </button>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="wishlist-actions">
-            <button className="btn btn-primary btn-full" onClick={continueShopping}>
-              Lanjut Berbelanja
-            </button>
+          <div className="wishlist-summary">
+            <div className="summary-card">
+              <h3>Ringkasan Wishlist</h3>
+              <div className="summary-row">
+                <span>Total Produk:</span>
+                <span>{wishlistItems.length} item</span>
+              </div>
+              <div className="summary-row">
+                <span>Produk Terfavorit:</span>
+                <span>{wishlistItems.length > 0 ? wishlistItems[0].name.substring(0, 20) + '...' : '-'}</span>
+              </div>
+
+              <div className="summary-actions">
+                <button className="btn btn-outline btn-full" onClick={continueShopping}>
+                  Lanjut Berbelanja
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
