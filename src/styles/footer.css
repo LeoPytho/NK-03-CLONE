@@ -1,195 +1,63 @@
-
-
-/* Footer Styles */
 .footer {
   width: 100%;
-  margin-top: 30px; /* lebih kecil */
   background: linear-gradient(135deg, #7b1c1c 0%, #5a1414 100%);
   color: white;
-  font-size: 12px; /* kecilkan default font */
+  text-align: center;
+  padding: 20px 15px 10px;
 }
 
-/* Footer Container */
-.footer-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 15px; /* kecil */
-}
-
-/* Main Footer Content */
-.footer-main {
-  padding: 20px 0 15px; /* diperkecil lagi */
-}
-
-.footer-main .footer-container {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
-  gap: 20px;
-}
-
-.footer-section {
+.footer-simple {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 15px;
 }
 
-/* Footer Logo */
 .footer-logo {
-  font-size: 20px; /* kecil */
-  margin-bottom: 5px;
+  font-size: 22px;
+  font-weight: normal;
 }
 
-.footer-description {
-  font-size: 12px;
-  line-height: 1.4;
-  margin-bottom: 5px;
-}
-
-/* Section Titles */
-.footer-title {
-  font-size: 14px;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Footer Links */
-.footer-links {
-  gap: 5px;
-}
-
-.footer-links li button {
-  font-size: 12px;
-  padding: 2px 0;
-}
-
-/* Social Media */
-.social-media h4 {
-  font-size: 13px;
-  margin-bottom: 8px;
+.footer-logo .logo-bold {
+  font-weight: bold;
 }
 
 .social-links {
-  gap: 6px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 
 .social-btn {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .social-btn svg {
-  font-size: 14px;
+  font-size: 18px;
+  color: white;
 }
 
-/* Contact Info */
-.contact-info {
-  gap: 10px;
+.social-btn:hover {
+  transform: translateY(-3px) scale(1.1);
 }
 
-.contact-item {
-  gap: 8px;
-}
-
-.contact-icon {
-  font-size: 12px;
-}
-
-.contact-value {
-  font-size: 12px;
-}
-
-/* Newsletter */
-.newsletter {
-  margin-top: 8px;
-  padding-top: 10px;
-}
-
-.newsletter h4 {
-  font-size: 13px;
-  margin-bottom: 5px;
-}
-
-.newsletter p {
-  font-size: 11px;
-  margin-bottom: 8px;
-}
-
-.newsletter-form {
-  gap: 5px;
-}
-
-.newsletter-input {
-  padding: 6px 8px;
-  font-size: 12px;
-}
-
-.newsletter-btn {
-  padding: 6px 8px;
-  font-size: 12px;
-}
-
-/* Footer Bottom */
 .footer-bottom {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 8px 0; /* kecil */
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.footer-bottom-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.copyright {
-  font-size: 11px;
-}
-
-.footer-bottom-links {
-  gap: 8px;
-}
-
-.footer-bottom-links button {
-  font-size: 11px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .footer-main .footer-container {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  .footer-logo,
-  .footer-description {
-    text-align: center;
-  }
-  .social-links {
-    justify-content: center;
-  }
-  .footer-bottom-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 8px;
-  }
-  .newsletter-form {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-logo {
-    font-size: 18px;
-  }
-  .footer-title {
-    font-size: 13px;
-  }
-  .social-btn {
-    width: 28px;
-    height: 28px;
-  }
-  .social-btn svg {
-    font-size: 12px;
-  }
+.footer-bottom p {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
