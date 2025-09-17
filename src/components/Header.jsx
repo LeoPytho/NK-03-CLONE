@@ -270,7 +270,7 @@ const Header = () => {
             <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
               <a href="#" className="dropdown-item">Profile Saya</a>
               <a href="#" className="dropdown-item">Pesanan Saya</a>
-              <a href="#" className="dropdown-item">Wishlist</a>
+              <a href="/wish" className="dropdown-item">Wishlist</a>
               <div className="dropdown-divider"></div>
               <a href="#" className="dropdown-item">Login</a>
               <a href="#" className="dropdown-item">Daftar</a>
@@ -293,7 +293,7 @@ const Header = () => {
             <a href="#" className="mobile-nav-link">Promo</a>
             <a href="#" className="mobile-nav-link">FAQ</a>
             <a href="#" className="mobile-nav-link">Pesanan Saya</a>
-            <a href="#" className="mobile-nav-link">Wishlist</a>
+            <a href="/wish" className="mobile-nav-link">Wishlist</a>
           </div>
           
           <div className="mobile-icons">
