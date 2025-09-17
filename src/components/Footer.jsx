@@ -14,9 +14,9 @@ const Footer = () => {
   };
 
   return (
-    <footer className="footer">
-      <div className="footer-simple">
-        {/* Logo & Nama */}
+    <footer className="footer footer-simple">
+      <div className="footer-container footer-simple-content">
+        {/* Logo + Nama */}
         <div className="footer-logo">
           <span className="logo-bold">Nayrakuen</span> Shop
         </div>
@@ -52,13 +52,6 @@ const Footer = () => {
             <FaFacebook />
           </button>
         </div>
-      </div>
-
-      {/* Footer Bottom */}
-      <div className="footer-bottom">
-        <p className="copyright">
-          &copy; 2024 Nayrakuen Shop. Semua hak cipta dilindungi.
-        </p>
       </div>
     </footer>
   );
