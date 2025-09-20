@@ -61,42 +61,31 @@ function Checkout() {
     fetchProducts();
   }, [navigate]);
 
-  // Function untuk mencari destination ID berdasarkan alamat
+  // Function untuk mencari destination ID berdasarkan alamat melalui backend proxy
   const findDestinationId = async (alamat) => {
     try {
       // Extract kata kunci dari alamat untuk pencarian
       const searchTerms = alamat.split(',')[0].trim(); // Ambil bagian pertama alamat
       
+      // Gunakan backend sebagai proxy untuk menghindari CORS
       const response = await fetch(
-        `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`,
-        {
-          headers: {
-            'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR',
-            'Access-Control-Allow-Origin': '*'
-          }
-        }
+        `https://backend-seven-nu-19.vercel.app/api/rajaongkir/destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`
       );
 
       const result = await response.json();
       
-      if (result.meta.code === 200 && result.data.length > 0) {
+      if (result.success && result.data && result.data.length > 0) {
         // Ambil destination pertama sebagai yang paling mirip
         return result.data[0].id;
       } else {
         // Fallback: coba dengan kata kunci yang lebih pendek
         const fallbackSearch = alamat.split(' ')[0];
         const fallbackResponse = await fetch(
-          `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`,
-          {
-            headers: {
-              'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR',
-              'Access-Control-Allow-Origin': '*'
-            }
-          }
+          `https://backend-seven-nu-19.vercel.app/api/rajaongkir/destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`
         );
 
         const fallbackResult = await fallbackResponse.json();
-        if (fallbackResult.meta.code === 200 && fallbackResult.data.length > 0) {
+        if (fallbackResult.success && fallbackResult.data && fallbackResult.data.length > 0) {
           return fallbackResult.data[0].id;
         }
         
@@ -108,32 +97,30 @@ function Checkout() {
     }
   };
 
-  // Function untuk menghitung ongkir
+  // Function untuk menghitung ongkir melalui backend proxy
   const calculateShipping = async (destinationId) => {
     try {
-      const formData = new URLSearchParams();
-      formData.append('origin', originId);
-      formData.append('destination', destinationId);
-      formData.append('weight', '1000');
-      formData.append('courier', 'jne');
-      formData.append('price', 'lowest');
-
+      // Gunakan backend sebagai proxy untuk menghindari CORS
       const response = await fetch(
-        'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost',
+        `https://backend-seven-nu-19.vercel.app/api/rajaongkir/cost`,
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'key': 'hWqTkgElebd23e99942bf7cdFcmovLVf',
-            'Access-Control-Allow-Origin': '*'
+            'Content-Type': 'application/json',
           },
-          body: formData
+          body: JSON.stringify({
+            origin: originId,
+            destination: destinationId,
+            weight: 1000,
+            courier: 'jne',
+            price: 'lowest'
+          })
         }
       );
 
       const result = await response.json();
       
-      if (result.meta.code === 200 && result.data.length > 0) {
+      if (result.success && result.data && result.data.length > 0) {
         // Cari service REG atau ambil yang pertama jika REG tidak ada
         const regService = result.data.find(service => service.service === 'REG');
         const selectedService = regService || result.data[0];
