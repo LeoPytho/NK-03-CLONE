@@ -51,6 +51,26 @@ function PurchaseForm() {
     fetchProduct();
   }, [id]);
 
+  // Function untuk menyimpan data pengguna ke sessionStorage
+  const saveUserDataToSession = (userData) => {
+    try {
+      // Simpan data pengguna untuk halaman pesanan saya
+      const userSessionData = {
+        email: userData.email,
+        nama: userData.nama,
+        nomor_hp: userData.nomor_hp,
+        alamat: userData.alamat,
+        product_id: id,
+        saved_at: new Date().toISOString()
+      };
+      
+      sessionStorage.setItem("userData", JSON.stringify(userSessionData));
+      console.log("User data saved to session:", userSessionData);
+    } catch (err) {
+      console.error("Error saving user data to session:", err);
+    }
+  };
+
   // Function untuk validasi redeem code
   const validateRedeemCode = async (code, email) => {
     if (!code.trim()) {
@@ -159,10 +179,49 @@ function PurchaseForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({
+    const updatedForm = {
       ...form,
       [name]: value,
-    });
+    };
+    
+    setForm(updatedForm);
+
+    // Simpan data ke sessionStorage setiap kali ada perubahan pada field utama
+    if (['email', 'nama', 'nomor_hp', 'alamat'].includes(name) && value.trim()) {
+      // Gabungkan alamat dan detail alamat untuk penyimpanan
+      const fullAddress = name === 'alamat' 
+        ? (updatedForm.detail_alamat ? `${value}, ${updatedForm.detail_alamat}` : value)
+        : (updatedForm.detail_alamat ? `${updatedForm.alamat}, ${updatedForm.detail_alamat}` : updatedForm.alamat);
+      
+      const dataToSave = {
+        email: updatedForm.email,
+        nama: updatedForm.nama,
+        nomor_hp: updatedForm.nomor_hp,
+        alamat: fullAddress,
+      };
+      
+      // Hanya simpan jika semua field utama terisi
+      if (dataToSave.email && dataToSave.nama && dataToSave.nomor_hp && dataToSave.alamat) {
+        saveUserDataToSession(dataToSave);
+      }
+    }
+
+    // Simpan juga ketika detail alamat berubah
+    if (name === 'detail_alamat') {
+      const fullAddress = updatedForm.alamat 
+        ? (value ? `${updatedForm.alamat}, ${value}` : updatedForm.alamat)
+        : '';
+      
+      if (updatedForm.email && updatedForm.nama && updatedForm.nomor_hp && fullAddress) {
+        const dataToSave = {
+          email: updatedForm.email,
+          nama: updatedForm.nama,
+          nomor_hp: updatedForm.nomor_hp,
+          alamat: fullAddress,
+        };
+        saveUserDataToSession(dataToSave);
+      }
+    }
 
     // Trigger address search when alamat field changes
     if (name === "alamat") {
@@ -197,12 +256,30 @@ function PurchaseForm() {
 
   // Function untuk select alamat dari suggestion
   const selectAddress = (selectedAddress) => {
-    setForm({
+    const updatedForm = {
       ...form,
       alamat: selectedAddress.address.label,
-    });
+    };
+    
+    setForm(updatedForm);
     setShowSuggestions(false);
     setAddressSuggestions([]);
+    
+    // Simpan data ke sessionStorage setelah memilih alamat
+    if (updatedForm.email && updatedForm.nama && updatedForm.nomor_hp) {
+      const fullAddress = updatedForm.detail_alamat 
+        ? `${selectedAddress.address.label}, ${updatedForm.detail_alamat}`
+        : selectedAddress.address.label;
+      
+      const dataToSave = {
+        email: updatedForm.email,
+        nama: updatedForm.nama,
+        nomor_hp: updatedForm.nomor_hp,
+        alamat: fullAddress,
+      };
+      saveUserDataToSession(dataToSave);
+    }
+    
     console.log(
       "Selected address - Lat:",
       selectedAddress.position?.lat,
@@ -290,6 +367,15 @@ function PurchaseForm() {
         dataToSave.discount_value = redeemData.discount_value;
         dataToSave.discount_percentage = redeemData.discount_percentage;
       }
+
+      // Simpan data final ke sessionStorage sebelum navigate
+      const finalUserData = {
+        email: dataToSave.email,
+        nama: dataToSave.nama,
+        nomor_hp: dataToSave.nomor_hp,
+        alamat: dataToSave.alamat,
+      };
+      saveUserDataToSession(finalUserData);
 
       sessionStorage.setItem("purchaseData", JSON.stringify(dataToSave));
       navigate("/checkout");
