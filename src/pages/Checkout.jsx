@@ -61,87 +61,116 @@ function Checkout() {
     fetchProducts();
   }, [navigate]);
 
-  // Function untuk mencari destination ID berdasarkan alamat
-  const findDestinationId = async (alamat) => {
+  // Function untuk menghitung ongkir berdasarkan zona alamat
+  const calculateShippingByZone = (alamat) => {
+    const address = alamat.toLowerCase();
+    
+    // Zona 1: Jakarta & sekitarnya (15k)
+    const zona1 = ['jakarta', 'depok', 'bekasi', 'tangerang', 'bogor'];
+    if (zona1.some(city => address.includes(city))) {
+      return 15000;
+    }
+    
+    // Zona 2: Jawa Barat, Jawa Tengah, Jawa Timur (25k)
+    const zona2 = [
+      'bandung', 'surabaya', 'semarang', 'yogyakarta', 'solo', 'malang', 
+      'kediri', 'madiun', 'pekalongan', 'tegal', 'purwokerto', 'cirebon',
+      'jawa barat', 'jawa tengah', 'jawa timur'
+    ];
+    if (zona2.some(city => address.includes(city))) {
+      return 25000;
+    }
+    
+    // Zona 3: Sumatera, Kalimantan bagian selatan (35k)
+    const zona3 = [
+      'medan', 'palembang', 'pekanbaru', 'padang', 'bandar lampung',
+      'jambi', 'bengkulu', 'banjarmasin', 'pontianak',
+      'sumatera', 'kalimantan', 'lampung'
+    ];
+    if (zona3.some(city => address.includes(city))) {
+      return 35000;
+    }
+    
+    // Zona 4: Sulawesi, Bali, NTB, NTT (45k)
+    const zona4 = [
+      'makassar', 'manado', 'kendari', 'palu', 'denpasar', 'mataram',
+      'kupang', 'bali', 'sulawesi', 'nusa tenggara'
+    ];
+    if (zona4.some(city => address.includes(city))) {
+      return 45000;
+    }
+    
+    // Zona 5: Papua, Maluku, Kalimantan utara (65k)
+    const zona5 = [
+      'jayapura', 'ambon', 'ternate', 'manokwari', 'sorong', 
+      'papua', 'maluku', 'samarinda', 'balikpapan'
+    ];
+    if (zona5.some(city => address.includes(city))) {
+      return 65000;
+    }
+    
+    // Default: Jawa (25k) - karena kebanyakan pengiriman dalam pulau Jawa
+    return 25000;
+  };
+
+  // Function untuk mencari destination ID melalui backend proxy (jika tersedia)
+  const findDestinationViaProxy = async (alamat) => {
     try {
-      // Extract kata kunci dari alamat untuk pencarian
-      const searchTerms = alamat.split(',')[0].trim(); // Ambil bagian pertama alamat
-      
+      // Coba gunakan backend sebagai proxy jika endpoint tersedia
       const response = await fetch(
-        `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`,
+        `https://backend-seven-nu-19.vercel.app/api/shipping/destination?search=${encodeURIComponent(alamat)}`,
         {
+          method: 'GET',
           headers: {
-            'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      const result = await response.json();
-      
-      if (result.meta.code === 200 && result.data.length > 0) {
-        // Ambil destination pertama sebagai yang paling mirip
-        return result.data[0].id;
-      } else {
-        // Fallback: coba dengan kata kunci yang lebih pendek
-        const fallbackSearch = alamat.split(' ')[0];
-        const fallbackResponse = await fetch(
-          `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`,
-          {
-            headers: {
-              'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
-            }
-          }
-        );
-
-        const fallbackResult = await fallbackResponse.json();
-        if (fallbackResult.meta.code === 200 && fallbackResult.data.length > 0) {
-          return fallbackResult.data[0].id;
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.destinationId) {
+          return result.destinationId;
         }
-        
-        throw new Error("Lokasi tujuan tidak ditemukan");
       }
+      
+      throw new Error("Proxy not available");
     } catch (err) {
-      console.error("Error finding destination:", err);
-      throw new Error("Gagal mencari lokasi tujuan");
+      console.log("Backend proxy tidak tersedia, menggunakan zona fallback");
+      throw err;
     }
   };
 
-  // Function untuk menghitung ongkir
-  const calculateShipping = async (destinationId) => {
+  // Function untuk menghitung ongkir melalui backend proxy (jika tersedia)
+  const calculateShippingViaProxy = async (destinationId) => {
     try {
-      const formData = new URLSearchParams();
-      formData.append('origin', originId);
-      formData.append('destination', destinationId);
-      formData.append('weight', '1000');
-      formData.append('courier', 'jne');
-      formData.append('price', 'lowest');
-
       const response = await fetch(
-        'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost',
+        'https://backend-seven-nu-19.vercel.app/api/shipping/calculate',
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'key': 'hWqTkgElebd23e99942bf7cdFcmovLVf'
+            'Content-Type': 'application/json'
           },
-          body: formData
+          body: JSON.stringify({
+            origin: originId,
+            destination: destinationId,
+            weight: 1000,
+            courier: 'jne'
+          })
         }
       );
 
-      const result = await response.json();
-      
-      if (result.meta.code === 200 && result.data.length > 0) {
-        // Cari service REG atau ambil yang pertama jika REG tidak ada
-        const regService = result.data.find(service => service.service === 'REG');
-        const selectedService = regService || result.data[0];
-        
-        return selectedService.cost;
-      } else {
-        throw new Error("Gagal menghitung ongkos kirim");
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.cost) {
+          return result.cost;
+        }
       }
+      
+      throw new Error("Proxy calculation failed");
     } catch (err) {
-      console.error("Error calculating shipping:", err);
-      throw new Error("Gagal menghitung ongkos kirim");
+      console.log("Backend proxy calculation tidak tersedia");
+      throw err;
     }
   };
 
@@ -153,14 +182,26 @@ function Checkout() {
         setOngkirError("");
         
         try {
-          const destinationId = await findDestinationId(data.alamat);
-          const shippingCost = await calculateShipping(destinationId);
-          setOngkir(shippingCost);
+          // Coba gunakan backend proxy terlebih dahulu
+          try {
+            const destinationId = await findDestinationViaProxy(data.alamat);
+            const shippingCost = await calculateShippingViaProxy(destinationId);
+            setOngkir(shippingCost);
+            return;
+          } catch (proxyError) {
+            console.log("Proxy gagal, menggunakan zona fallback");
+          }
+          
+          // Fallback ke sistem zona
+          const zoneCost = calculateShippingByZone(data.alamat);
+          setOngkir(zoneCost);
+          
         } catch (err) {
           console.error("Error fetching ongkir:", err);
-          setOngkirError(err.message);
-          // Set default ongkir jika gagal
-          setOngkir(15000);
+          setOngkirError("Menggunakan ongkir berdasarkan zona");
+          // Set default ongkir berdasarkan zona
+          const zoneCost = calculateShippingByZone(data.alamat);
+          setOngkir(zoneCost);
         } finally {
           setLoadingOngkir(false);
         }
@@ -301,18 +342,21 @@ function Checkout() {
               <td>Rp {product.price.toLocaleString()}</td>
             </tr>
             <tr>
-              <td>Ongkir (JNE REG)</td>
+              <td>Ongkir (JNE)</td>
               <td>
                 {loadingOngkir ? (
                   <span style={{ fontSize: '12px', color: '#666' }}>
                     Menghitung...
                   </span>
-                ) : ongkirError ? (
-                  <span style={{ fontSize: '12px', color: '#e74c3c' }}>
-                    Rp {ongkir.toLocaleString()} (default)
-                  </span>
                 ) : (
-                  `Rp ${ongkir.toLocaleString()}`
+                  <>
+                    Rp {ongkir.toLocaleString()}
+                    {ongkirError && (
+                      <span style={{ fontSize: '11px', color: '#f39c12', display: 'block' }}>
+                        (berdasarkan zona)
+                      </span>
+                    )}
+                  </>
                 )}
               </td>
             </tr>
