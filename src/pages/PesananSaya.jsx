@@ -283,12 +283,6 @@ function MyOrders() {
                       <span className="detail-label">No. HP:</span>
                       <span className="detail-value">{order.nomor_hp}</span>
                     </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Member:</span>
-                      <span className="detail-value">
-                        {order.member === 'yes' ? 'Anggota Fanbase' : 'Bukan Anggota'}
-                      </span>
-                    </div>
                   </div>
 
                   <div className="order-timeline">
@@ -307,24 +301,6 @@ function MyOrders() {
                       </div>
                     )}
                   </div>
-                </div>
-
-                <div className="order-actions">
-                  {order.status === 'belum bayar' && (
-                    <button className="btn btn-primary btn-sm">
-                      Bayar Sekarang
-                    </button>
-                  )}
-                  {order.status === 'dikirim' && (
-                    <div className="shipping-info">
-                      <span className="shipping-note">
-                        📧 Nomor resi telah dikirim ke email Anda
-                      </span>
-                    </div>
-                  )}
-                  <button className="btn btn-outline btn-sm">
-                    Detail Pesanan
-                  </button>
                 </div>
               </div>
             ))}
