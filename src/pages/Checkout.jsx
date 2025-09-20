@@ -17,11 +17,6 @@ function Checkout() {
   const originId = 17473; // ID asal (sesuaikan dengan lokasi toko)
 
   useEffect(() => {
-    if (sessionStorage.getItem("checkoutData")) {
-      navigate("/success", { replace: true });
-      return;
-    }
-
     const storedData =
       sessionStorage.getItem("customerData") ||
       sessionStorage.getItem("purchaseData");
