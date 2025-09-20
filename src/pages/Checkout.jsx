@@ -9,10 +9,12 @@ function Checkout() {
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState("");
   const [loadingProduct, setLoadingProduct] = useState(true);
+  const [loadingOngkir, setLoadingOngkir] = useState(false);
+  const [ongkir, setOngkir] = useState(0);
+  const [ongkirError, setOngkirError] = useState("");
 
-  const ongkir = 15000;
-  const diskon = 20000;
   const kodeUnik = 123;
+  const originId = 17473; // ID asal (sesuaikan dengan lokasi toko)
 
   useEffect(() => {
     if (sessionStorage.getItem("checkoutData")) {
@@ -59,9 +61,136 @@ function Checkout() {
     fetchProducts();
   }, [navigate]);
 
+  // Function untuk mencari destination ID berdasarkan alamat
+  const findDestinationId = async (alamat) => {
+    try {
+      // Extract kata kunci dari alamat untuk pencarian
+      const searchTerms = alamat.split(',')[0].trim(); // Ambil bagian pertama alamat
+      
+      const response = await fetch(
+        `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`,
+        {
+          headers: {
+            'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
+          }
+        }
+      );
+
+      const result = await response.json();
+      
+      if (result.meta.code === 200 && result.data.length > 0) {
+        // Ambil destination pertama sebagai yang paling mirip
+        return result.data[0].id;
+      } else {
+        // Fallback: coba dengan kata kunci yang lebih pendek
+        const fallbackSearch = alamat.split(' ')[0];
+        const fallbackResponse = await fetch(
+          `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`,
+          {
+            headers: {
+              'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
+            }
+          }
+        );
+
+        const fallbackResult = await fallbackResponse.json();
+        if (fallbackResult.meta.code === 200 && fallbackResult.data.length > 0) {
+          return fallbackResult.data[0].id;
+        }
+        
+        throw new Error("Lokasi tujuan tidak ditemukan");
+      }
+    } catch (err) {
+      console.error("Error finding destination:", err);
+      throw new Error("Gagal mencari lokasi tujuan");
+    }
+  };
+
+  // Function untuk menghitung ongkir
+  const calculateShipping = async (destinationId) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('origin', originId);
+      formData.append('destination', destinationId);
+      formData.append('weight', '1000');
+      formData.append('courier', 'jne');
+      formData.append('price', 'lowest');
+
+      const response = await fetch(
+        'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'key': 'hWqTkgElebd23e99942bf7cdFcmovLVf'
+          },
+          body: formData
+        }
+      );
+
+      const result = await response.json();
+      
+      if (result.meta.code === 200 && result.data.length > 0) {
+        // Cari service REG atau ambil yang pertama jika REG tidak ada
+        const regService = result.data.find(service => service.service === 'REG');
+        const selectedService = regService || result.data[0];
+        
+        return selectedService.cost;
+      } else {
+        throw new Error("Gagal menghitung ongkos kirim");
+      }
+    } catch (err) {
+      console.error("Error calculating shipping:", err);
+      throw new Error("Gagal menghitung ongkos kirim");
+    }
+  };
+
+  // Effect untuk menghitung ongkir ketika data alamat tersedia
+  useEffect(() => {
+    if (data && data.alamat && !loadingProduct) {
+      const fetchOngkir = async () => {
+        setLoadingOngkir(true);
+        setOngkirError("");
+        
+        try {
+          const destinationId = await findDestinationId(data.alamat);
+          const shippingCost = await calculateShipping(destinationId);
+          setOngkir(shippingCost);
+        } catch (err) {
+          console.error("Error fetching ongkir:", err);
+          setOngkirError(err.message);
+          // Set default ongkir jika gagal
+          setOngkir(15000);
+        } finally {
+          setLoadingOngkir(false);
+        }
+      };
+
+      fetchOngkir();
+    }
+  }, [data, loadingProduct]);
+
+  // Hitung diskon dari data redeem atau gunakan default
+  const getDiskonAmount = () => {
+    if (data && data.discount_type && data.discount_value) {
+      if (data.discount_type === 'nominal') {
+        return data.discount_value;
+      } else if (data.discount_type === 'percentage' && product) {
+        return Math.round((product.price * data.discount_percentage) / 100);
+      }
+    }
+    return 0; // Tidak ada diskon jika tidak ada redeem code
+  };
+
+  const diskon = getDiskonAmount();
   const total = product ? product.price + ongkir - diskon + kodeUnik : 0;
 
   const handleFinalSubmit = async () => {
+    if (loadingOngkir) {
+      setError("Mohon tunggu hingga ongkir selesai dihitung");
+      return;
+    }
+
     setPaying(true);
     setError("");
 
@@ -152,6 +281,11 @@ function Checkout() {
         <p>
           <strong>Alamat:</strong> {data.alamat}
         </p>
+        {data.redeem_code && (
+          <p>
+            <strong>Code Redeem:</strong> {data.redeem_code}
+          </p>
+        )}
       </div>
 
       <div className="invoice-section">
@@ -167,13 +301,34 @@ function Checkout() {
               <td>Rp {product.price.toLocaleString()}</td>
             </tr>
             <tr>
-              <td>Ongkir</td>
-              <td>Rp {ongkir.toLocaleString()}</td>
+              <td>Ongkir (JNE REG)</td>
+              <td>
+                {loadingOngkir ? (
+                  <span style={{ fontSize: '12px', color: '#666' }}>
+                    Menghitung...
+                  </span>
+                ) : ongkirError ? (
+                  <span style={{ fontSize: '12px', color: '#e74c3c' }}>
+                    Rp {ongkir.toLocaleString()} (default)
+                  </span>
+                ) : (
+                  `Rp ${ongkir.toLocaleString()}`
+                )}
+              </td>
             </tr>
-            <tr>
-              <td>Diskon</td>
-              <td>- Rp {diskon.toLocaleString()}</td>
-            </tr>
+            {diskon > 0 && (
+              <tr>
+                <td>
+                  Diskon
+                  {data.redeem_code && (
+                    <span style={{ fontSize: '12px', color: '#27ae60', display: 'block' }}>
+                      ({data.redeem_code})
+                    </span>
+                  )}
+                </td>
+                <td>- Rp {diskon.toLocaleString()}</td>
+              </tr>
+            )}
             <tr>
               <td>Kode Unik</td>
               <td>Rp {kodeUnik.toLocaleString()}</td>
@@ -190,13 +345,36 @@ function Checkout() {
         </table>
       </div>
 
+      {ongkirError && (
+        <div style={{ 
+          padding: '10px', 
+          backgroundColor: '#fff3cd', 
+          border: '1px solid #ffeaa7', 
+          borderRadius: '4px', 
+          marginBottom: '15px',
+          fontSize: '14px',
+          color: '#856404'
+        }}>
+          <strong>Peringatan:</strong> {ongkirError}. Menggunakan ongkir default Rp {ongkir.toLocaleString()}.
+        </div>
+      )}
+
       {error && <p className="error">{error}</p>}
 
-      <button className="btn-pay" onClick={handleFinalSubmit} disabled={paying}>
+      <button 
+        className="btn-pay" 
+        onClick={handleFinalSubmit} 
+        disabled={paying || loadingOngkir}
+      >
         {paying ? (
           <div className="btn-loader">
             <span className="loader-ring"></span>
             Memproses...
+          </div>
+        ) : loadingOngkir ? (
+          <div className="btn-loader">
+            <span className="loader-ring"></span>
+            Menghitung Ongkir...
           </div>
         ) : (
           "Bayar Sekarang"
