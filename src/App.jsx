@@ -9,7 +9,6 @@ import Success from "./pages/Success";
 import Order from "./pages/Order";
 import MyOrders from "./pages/PesananSaya";
 import Header from "./components/Header";
-import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -30,7 +29,6 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
     </Router>
   );
 }
