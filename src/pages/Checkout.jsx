@@ -61,39 +61,266 @@ function Checkout() {
     fetchProducts();
   }, [navigate]);
 
-  // Function untuk mencari destination ID berdasarkan alamat melalui backend proxy
+  // Function untuk mengekstrak informasi alamat secara dinamis
+  const extractAddressInfo = (alamat) => {
+    const alamatLower = alamat.toLowerCase();
+    const parts = alamat.split(',').map(part => part.trim());
+    
+    const extractedInfo = {
+      kecamatan: null,
+      kota: null,
+      kelurahan: null,
+      zipCode: null,
+      keywords: []
+    };
+    
+    // Cari kode pos (5 digit angka)
+    const zipMatch = alamat.match(/\b\d{5}\b/);
+    if (zipMatch) {
+      extractedInfo.zipCode = zipMatch[0];
+    }
+    
+    // Keywords umum untuk identifikasi kecamatan/kabupaten
+    const kecamatanKeywords = [
+      'kec', 'kecamatan', 'kab', 'kabupaten', 'kota'
+    ];
+    
+    // Keywords umum untuk identifikasi kelurahan/desa
+    const kelurahanKeywords = [
+      'desa', 'kelurahan', 'kel', 'ds'
+    ];
+    
+    // Ekstrak informasi dari setiap bagian alamat
+    parts.forEach((part, index) => {
+      const partLower = part.toLowerCase();
+      const cleanPart = part.replace(/[^\w\s]/g, '').trim();
+      
+      // Skip jika terlalu pendek
+      if (cleanPart.length < 3) return;
+      
+      // Cek apakah ini kecamatan/kabupaten
+      const isKecamatan = kecamatanKeywords.some(keyword => 
+        partLower.includes(keyword)
+      );
+      
+      // Cek apakah ini kelurahan/desa
+      const isKelurahan = kelurahanKeywords.some(keyword => 
+        partLower.includes(keyword)
+      );
+      
+      if (isKecamatan && !extractedInfo.kecamatan) {
+        // Ambil nama kecamatan tanpa prefix
+        let kecamatanName = cleanPart;
+        kecamatanKeywords.forEach(keyword => {
+          kecamatanName = kecamatanName.replace(new RegExp(keyword, 'gi'), '').trim();
+        });
+        if (kecamatanName) {
+          extractedInfo.kecamatan = kecamatanName.toLowerCase();
+        }
+      } else if (isKelurahan && !extractedInfo.kelurahan) {
+        // Ambil nama kelurahan tanpa prefix
+        let kelurahanName = cleanPart;
+        kelurahanKeywords.forEach(keyword => {
+          kelurahanName = kelurahanName.replace(new RegExp(keyword, 'gi'), '').trim();
+        });
+        if (kelurahanName) {
+          extractedInfo.kelurahan = kelurahanName.toLowerCase();
+        }
+      } else {
+        // Tambahkan sebagai keyword umum jika tidak kosong
+        if (cleanPart && !extractedInfo.keywords.includes(cleanPart.toLowerCase())) {
+          extractedInfo.keywords.push(cleanPart.toLowerCase());
+        }
+      }
+    });
+    
+    // Jika tidak ada kecamatan yang teridentifikasi, coba ambil dari bagian akhir alamat
+    if (!extractedInfo.kecamatan && parts.length >= 2) {
+      const possibleKecamatan = parts[parts.length - 2].replace(/[^\w\s]/g, '').trim();
+      if (possibleKecamatan && possibleKecamatan.length >= 3) {
+        extractedInfo.kecamatan = possibleKecamatan.toLowerCase();
+      }
+    }
+    
+    // Jika tidak ada kelurahan, coba ambil dari bagian awal alamat
+    if (!extractedInfo.kelurahan && parts.length >= 1) {
+      const possibleKelurahan = parts[0].replace(/[^\w\s]/g, '').trim();
+      if (possibleKelurahan && possibleKelurahan.length >= 3) {
+        extractedInfo.kelurahan = possibleKelurahan.toLowerCase();
+      }
+    }
+    
+    // Identifikasi kota dari keywords atau bagian alamat
+    extractedInfo.keywords.forEach(keyword => {
+      if (keyword.length > 4 && !extractedInfo.kota) {
+        extractedInfo.kota = keyword;
+      }
+    });
+    
+    return extractedInfo;
+  };
+
+  // Function untuk mencari destination ID berdasarkan alamat
   const findDestinationId = async (alamat) => {
     try {
-      // Extract kata kunci dari alamat untuk pencarian
-      const searchTerms = alamat.split(',')[0].trim(); // Ambil bagian pertama alamat
+      console.log("Mencari destination untuk alamat:", alamat);
       
-      // Gunakan backend sebagai proxy untuk menghindari CORS
-      const response = await fetch(
-        `https://v2.jkt48connect.com/api/rajaongkir/destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0&password=vzy&username=vzy`
-      );
-
-      const result = await response.json();
+      const extractedInfo = extractAddressInfo(alamat);
+      console.log("Extracted info:", extractedInfo);
       
-      if (result.success && result.data && result.data.length > 0) {
-        // Ambil destination pertama sebagai yang paling mirip
-        return result.data[0].id;
-      } else {
-        // Fallback: coba dengan kata kunci yang lebih pendek
-        const fallbackSearch = alamat.split(' ')[0];
-        const fallbackResponse = await fetch(
-          `https://v2.jkt48connect.com/api/rajaongkir/destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0&password=vzy&username=vzy`
-        );
-
-        const fallbackResult = await fallbackResponse.json();
-        if (fallbackResult.success && fallbackResult.data && fallbackResult.data.length > 0) {
-          return fallbackResult.data[0].id;
+      // Function untuk menghitung skor kecocokan
+      const calculateMatchScore = (destination) => {
+        let score = 0;
+        const destLabel = destination.label.toLowerCase();
+        const destCity = destination.city_name.toLowerCase();
+        const destDistrict = destination.district_name.toLowerCase();
+        const destSubdistrict = destination.subdistrict_name.toLowerCase();
+        
+        // Bonus besar jika kode pos cocok (prioritas utama)
+        if (extractedInfo.zipCode && destination.zip_code === extractedInfo.zipCode) {
+          score += 100;
         }
         
-        throw new Error("Lokasi tujuan tidak ditemukan");
+        // Bonus jika kecamatan cocok
+        if (extractedInfo.kecamatan) {
+          if (destDistrict.includes(extractedInfo.kecamatan) || 
+              destLabel.includes(extractedInfo.kecamatan)) {
+            score += 50;
+          }
+        }
+        
+        // Bonus jika kelurahan/desa cocok
+        if (extractedInfo.kelurahan) {
+          if (destSubdistrict.includes(extractedInfo.kelurahan) || 
+              destLabel.includes(extractedInfo.kelurahan)) {
+            score += 40;
+          }
+        }
+        
+        // Bonus jika kota cocok
+        if (extractedInfo.kota) {
+          if (destCity.includes(extractedInfo.kota) || 
+              destLabel.includes(extractedInfo.kota)) {
+            score += 30;
+          }
+        }
+        
+        // Cek kecocokan dengan keywords lainnya
+        extractedInfo.keywords.forEach(keyword => {
+          if (keyword.length > 2) {
+            if (destLabel.includes(keyword) || 
+                destCity.includes(keyword) || 
+                destDistrict.includes(keyword) || 
+                destSubdistrict.includes(keyword)) {
+              score += 10;
+            }
+          }
+        });
+        
+        return score;
+      };
+      
+      // Buat daftar query pencarian berdasarkan informasi yang diekstrak
+      const searchQueries = [];
+      
+      // Prioritas: kode pos terlebih dahulu
+      if (extractedInfo.zipCode) {
+        searchQueries.push(extractedInfo.zipCode);
       }
+      
+      // Kemudian kecamatan
+      if (extractedInfo.kecamatan) {
+        searchQueries.push(extractedInfo.kecamatan);
+      }
+      
+      // Kelurahan
+      if (extractedInfo.kelurahan) {
+        searchQueries.push(extractedInfo.kelurahan);
+      }
+      
+      // Kota
+      if (extractedInfo.kota) {
+        searchQueries.push(extractedInfo.kota);
+      }
+      
+      // Keywords lainnya
+      extractedInfo.keywords.forEach(keyword => {
+        if (keyword.length > 3 && !searchQueries.includes(keyword)) {
+          searchQueries.push(keyword);
+        }
+      });
+      
+      // Fallback: gunakan bagian pertama dan terakhir alamat
+      const alamatParts = alamat.split(',').map(part => part.trim());
+      if (alamatParts.length > 0) {
+        const firstPart = alamatParts[0].replace(/[^\w\s]/g, '').trim();
+        const lastPart = alamatParts[alamatParts.length - 1].replace(/[^\w\s]/g, '').trim();
+        
+        if (firstPart && firstPart.length > 2 && !searchQueries.includes(firstPart.toLowerCase())) {
+          searchQueries.push(firstPart);
+        }
+        if (lastPart && lastPart.length > 2 && !searchQueries.includes(lastPart.toLowerCase())) {
+          searchQueries.push(lastPart);
+        }
+      }
+      
+      console.log("Search queries:", searchQueries);
+      
+      let allDestinations = [];
+      
+      // Lakukan pencarian dengan setiap query
+      for (const query of searchQueries) {
+        try {
+          console.log("Searching with query:", query);
+          const response = await fetch(
+            `https://v2.jkt48connect.com/api/rajaongkir/destination?search=${encodeURIComponent(query)}&limit=20&offset=0&username=vzy&password=vzy`
+          );
+          
+          const result = await response.json();
+          
+          if (result.success && result.data && result.data.length > 0) {
+            // Tambahkan destinations yang belum ada
+            result.data.forEach(dest => {
+              if (!allDestinations.find(d => d.id === dest.id)) {
+                allDestinations.push(dest);
+              }
+            });
+          }
+        } catch (err) {
+          console.warn(`Error searching with query "${query}":`, err);
+          continue;
+        }
+      }
+      
+      if (allDestinations.length === 0) {
+        throw new Error("Lokasi tujuan tidak ditemukan. Pastikan alamat lengkap dengan nama kecamatan/kelurahan.");
+      }
+      
+      console.log(`Found ${allDestinations.length} potential destinations`);
+      
+      // Hitung skor untuk setiap destination
+      const destinationsWithScore = allDestinations.map(dest => ({
+        ...dest,
+        score: calculateMatchScore(dest)
+      }));
+      
+      // Urutkan berdasarkan skor tertinggi
+      destinationsWithScore.sort((a, b) => b.score - a.score);
+      
+      console.log("Top destinations with scores:");
+      destinationsWithScore.slice(0, 5).forEach(dest => {
+        console.log(`- ${dest.label} (Score: ${dest.score})`);
+      });
+      
+      // Ambil destination dengan skor tertinggi
+      const bestMatch = destinationsWithScore[0];
+      
+      console.log(`Selected destination: ${bestMatch.label} (Score: ${bestMatch.score})`);
+      return bestMatch.id;
+      
     } catch (err) {
       console.error("Error finding destination:", err);
-      throw new Error("Gagal mencari lokasi tujuan");
+      throw new Error(err.message || "Gagal mencari lokasi tujuan");
     }
   };
 
