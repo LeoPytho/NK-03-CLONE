@@ -102,21 +102,12 @@ function Checkout() {
     try {
       // Gunakan backend sebagai proxy untuk menghindari CORS
       const response = await fetch(
-        `https://v2.jkt48connect.com/api/rajaongkir/cost`,
+        `https://v2.jkt48connect.com/api/rajaongkir/cost?origin=${originId}&destination=${destinationId}&weight=1000&courier=jne&price=lowest&username=vzy&password=vzy`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: 'vzy',
-            password: 'vzy',
-            origin: originId,
-            destination: destinationId,
-            weight: 1000,
-            courier: 'jne',
-            price: 'lowest'
-          })
+          }
         }
       );
 
