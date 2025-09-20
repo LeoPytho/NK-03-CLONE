@@ -124,8 +124,8 @@ function MyOrders() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'belum bayar': { class: 'status-pending', text: 'Belum Bayar', icon: '⏳' },
-      'lunas': { class: 'status-paid', text: 'Lunas', icon: '✅' },
+      'belum bayar': { class: 'status-pending', text: 'Belum Bayar', icon: '' },
+      'lunas': { class: 'status-paid', text: 'Lunas', icon: '' },
       'dikemas': { class: 'status-processing', text: 'Dikemas', icon: '📦' },
       'dikirim': { class: 'status-shipped', text: 'Dikirim', icon: '🚚' },
       'selesai': { class: 'status-completed', text: 'Selesai', icon: '🎉' },
@@ -217,12 +217,8 @@ function MyOrders() {
 
       <div className="orders-header">
         <h1>Pesanan Saya</h1>
-        <div className="user-info">
-          <p><strong>Nama:</strong> {userData?.nama}</p>
-          <p><strong>Email:</strong> {userData?.email}</p>
-        </div>
         <button className="btn btn-outline btn-refresh" onClick={refreshOrders}>
-          🔄 Refresh
+           Refresh
         </button>
       </div>
 
