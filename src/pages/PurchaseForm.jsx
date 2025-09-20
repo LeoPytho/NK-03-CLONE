@@ -12,6 +12,7 @@ function PurchaseForm() {
     alamat: "",
     detail_alamat: "", // Tambahan untuk detail alamat
     member: "non", // default non-anggota
+    code_redeem: "", // Tambahan untuk code redeem
   });
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,12 @@ function PurchaseForm() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchingAddress, setSearchingAddress] = useState(false);
+  
+  // State untuk redeem code
+  const [redeemCodeError, setRedeemCodeError] = useState("");
+  const [redeemCodeSuccess, setRedeemCodeSuccess] = useState("");
+  const [validatingCode, setValidatingCode] = useState(false);
+  const [redeemData, setRedeemData] = useState(null); // Untuk menyimpan data redeem yang valid
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -43,6 +50,78 @@ function PurchaseForm() {
 
     fetchProduct();
   }, [id]);
+
+  // Function untuk validasi redeem code
+  const validateRedeemCode = async (code, email) => {
+    if (!code.trim()) {
+      setRedeemCodeError("");
+      setRedeemCodeSuccess("");
+      setRedeemData(null);
+      return;
+    }
+
+    if (!email.trim()) {
+      setRedeemCodeError("Email harus diisi terlebih dahulu untuk validasi code redeem");
+      return;
+    }
+
+    setValidatingCode(true);
+    setRedeemCodeError("");
+    setRedeemCodeSuccess("");
+
+    try {
+      const res = await fetch(
+        `https://v2.jkt48connect.com/api/nayrakuen/lihat-redeem?username=vzy&password=vzy`
+      );
+      const result = await res.json();
+
+      if (result.status && result.data) {
+        // Cari code yang sesuai
+        const matchingCode = result.data.find(item => 
+          item.code === code.trim() && 
+          item.is_active === true && 
+          item.is_used === false
+        );
+
+        if (matchingCode) {
+          // Code ditemukan, cek email
+          if (matchingCode.email.toLowerCase() === email.toLowerCase()) {
+            // Code dan email valid
+            setRedeemCodeSuccess(`Code valid! Diskon ${matchingCode.discount_type === 'nominal' 
+              ? `Rp ${matchingCode.discount_value.toLocaleString('id-ID')}` 
+              : `${matchingCode.discount_percentage}%`} akan diterapkan.`);
+            setRedeemData(matchingCode);
+          } else {
+            // Code valid tapi email tidak cocok
+            setRedeemCodeError("Email tidak terdaftar untuk code redeem ini");
+            setRedeemData(null);
+          }
+        } else {
+          // Code tidak ditemukan atau tidak valid
+          const codeExists = result.data.find(item => item.code === code.trim());
+          if (codeExists) {
+            if (!codeExists.is_active) {
+              setRedeemCodeError("Code redeem tidak aktif");
+            } else if (codeExists.is_used) {
+              setRedeemCodeError("Code redeem sudah digunakan");
+            }
+          } else {
+            setRedeemCodeError("Code redeem tidak valid");
+          }
+          setRedeemData(null);
+        }
+      } else {
+        setRedeemCodeError("Gagal memvalidasi code redeem");
+        setRedeemData(null);
+      }
+    } catch (err) {
+      console.error("Error validating redeem code:", err);
+      setRedeemCodeError("Terjadi kesalahan saat validasi code redeem");
+      setRedeemData(null);
+    } finally {
+      setValidatingCode(false);
+    }
+  };
 
   // Function untuk search alamat dari HERE Maps API
   const searchAddress = async (query) => {
@@ -89,6 +168,31 @@ function PurchaseForm() {
     if (name === "alamat") {
       searchAddress(value);
     }
+
+    // Reset redeem code validation when member status changes
+    if (name === "member") {
+      setRedeemCodeError("");
+      setRedeemCodeSuccess("");
+      setRedeemData(null);
+      if (value === "non") {
+        setForm(prev => ({ ...prev, code_redeem: "" }));
+      }
+    }
+
+    // Validate redeem code when email or code changes
+    if (name === "email" && form.member === "yes" && form.code_redeem) {
+      // Debounce validation untuk email
+      setTimeout(() => {
+        validateRedeemCode(form.code_redeem, value);
+      }, 500);
+    }
+
+    if (name === "code_redeem") {
+      // Debounce validation untuk code
+      setTimeout(() => {
+        validateRedeemCode(value, form.email);
+      }, 500);
+    }
   };
 
   // Function untuk select alamat dari suggestion
@@ -126,6 +230,12 @@ function PurchaseForm() {
 
     if (!product) {
       setError("Produk tidak valid.");
+      return;
+    }
+
+    // Validasi redeem code jika diisi
+    if (form.member === "yes" && form.code_redeem && !redeemData) {
+      setError("Code redeem tidak valid atau belum divalidasi.");
       return;
     }
 
@@ -171,6 +281,14 @@ function PurchaseForm() {
           alamat: fullAddress,
           member: form.member,
         };
+      }
+
+      // Tambahkan data redeem jika ada
+      if (redeemData) {
+        dataToSave.redeem_code = redeemData.code;
+        dataToSave.discount_type = redeemData.discount_type;
+        dataToSave.discount_value = redeemData.discount_value;
+        dataToSave.discount_percentage = redeemData.discount_percentage;
       }
 
       sessionStorage.setItem("purchaseData", JSON.stringify(dataToSave));
@@ -331,6 +449,66 @@ function PurchaseForm() {
               <option value="yes">Anggota Fanbase</option>
             </select>
           </label>
+
+          {/* Code Redeem field - hanya tampil jika member = "yes" */}
+          {form.member === "yes" && (
+            <label>
+              Code Redeem (Opsional)
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  name="code_redeem"
+                  value={form.code_redeem}
+                  onChange={handleChange}
+                  placeholder="Masukkan code redeem..."
+                  style={{ 
+                    width: '100%',
+                    paddingRight: validatingCode ? '80px' : '10px'
+                  }}
+                />
+                {validatingCode && (
+                  <div style={{ 
+                    position: 'absolute', 
+                    right: '10px', 
+                    top: '50%', 
+                    transform: 'translateY(-50%)',
+                    fontSize: '12px',
+                    color: '#666'
+                  }}>
+                    Validating...
+                  </div>
+                )}
+              </div>
+              
+              {/* Pesan error atau success untuk redeem code */}
+              {redeemCodeError && (
+                <small style={{ 
+                  fontSize: '12px', 
+                  color: '#e74c3c', 
+                  marginTop: '5px', 
+                  display: 'block' 
+                }}>
+                  {redeemCodeError}
+                </small>
+              )}
+              
+              {redeemCodeSuccess && (
+                <small style={{ 
+                  fontSize: '12px', 
+                  color: '#27ae60', 
+                  marginTop: '5px', 
+                  display: 'block',
+                  fontWeight: '500'
+                }}>
+                  {redeemCodeSuccess}
+                </small>
+              )}
+              
+              <small style={{ fontSize: '12px', color: '#666', marginTop: '5px', display: 'block' }}>
+                Masukkan code redeem untuk mendapatkan diskon. Email harus diisi terlebih dahulu.
+              </small>
+            </label>
+          )}
 
           {error && <p className="error">{error}</p>}
 
