@@ -69,7 +69,7 @@ function Checkout() {
       
       // Gunakan backend sebagai proxy untuk menghindari CORS
       const response = await fetch(
-        `https://backend-seven-nu-19.vercel.app/api/rajaongkir/destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`
+        `https://v2.jkt48connect.com/api/rajaongkir/destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0&password=vzy&username=vzy`
       );
 
       const result = await response.json();
@@ -81,7 +81,7 @@ function Checkout() {
         // Fallback: coba dengan kata kunci yang lebih pendek
         const fallbackSearch = alamat.split(' ')[0];
         const fallbackResponse = await fetch(
-          `https://backend-seven-nu-19.vercel.app/api/rajaongkir/destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`
+          `https://v2.jkt48connect.com/api/rajaongkir/destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0&password=vzy&username=vzy`
         );
 
         const fallbackResult = await fallbackResponse.json();
@@ -102,7 +102,7 @@ function Checkout() {
     try {
       // Gunakan backend sebagai proxy untuk menghindari CORS
       const response = await fetch(
-        `https://backend-seven-nu-19.vercel.app/api/rajaongkir/cost`,
+        `https://v2.jkt48connect.com/api/rajaongkir/cost`,
         {
           method: 'POST',
           headers: {
