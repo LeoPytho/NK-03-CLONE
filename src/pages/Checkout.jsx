@@ -71,7 +71,8 @@ function Checkout() {
         `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(searchTerms)}&limit=10&offset=0`,
         {
           headers: {
-            'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
+            'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR',
+            'Access-Control-Allow-Origin': '*'
           }
         }
       );
@@ -88,7 +89,8 @@ function Checkout() {
           `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?search=${encodeURIComponent(fallbackSearch)}&limit=10&offset=0`,
           {
             headers: {
-              'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR'
+              'key': 'h9wQ46icebd23e99942bf7cdHdGEelYR',
+              'Access-Control-Allow-Origin': '*'
             }
           }
         );
@@ -122,7 +124,8 @@ function Checkout() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'key': 'hWqTkgElebd23e99942bf7cdFcmovLVf'
+            'key': 'hWqTkgElebd23e99942bf7cdFcmovLVf',
+            'Access-Control-Allow-Origin': '*'
           },
           body: formData
         }
