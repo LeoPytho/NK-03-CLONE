@@ -104,7 +104,7 @@ function Checkout() {
       const response = await fetch(
         `https://v2.jkt48connect.com/api/rajaongkir/cost`,
         {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
