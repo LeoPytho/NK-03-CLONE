@@ -211,9 +211,6 @@ function Cart() {
                 <button className="btn btn-outline" onClick={continueShopping}>
                   Lanjut Belanja
                 </button>
-                <button className="btn btn-primary btn-full" onClick={handleCheckout}>
-                  Checkout Semua
-                </button>
                 <button className="btn btn-danger btn-outline" onClick={clearCart}>
                   Kosongkan Keranjang
                 </button>
