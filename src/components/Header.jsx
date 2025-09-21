@@ -242,12 +242,6 @@ const Header = () => {
         
         {/* Right Side Icons */}
         <div className="nav-icons">
-          <button className="icon-btn" onClick={handleNotificationClick}>
-            <FaBell />
-            {notificationCount > 0 && (
-              <span className="badge">{notificationCount}</span>
-            )}
-          </button>
           
           <button className="icon-btn" onClick={handleCartClick}>
             <FaShoppingCart />
@@ -297,11 +291,6 @@ const Header = () => {
           </div>
           
           <div className="mobile-icons">
-            <button className="mobile-icon-button" onClick={handleNotificationClick}>
-              <FaBell className="icon" />
-              <span>Notifikasi</span>
-              {notificationCount > 0 && <span className="badge">{notificationCount}</span>}
-            </button>
             
             <button className="mobile-icon-button" onClick={handleCartClick}>
               <FaShoppingCart className="icon" />
