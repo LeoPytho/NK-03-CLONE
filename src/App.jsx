@@ -8,6 +8,7 @@ import Wishlist from "./pages/Wishlist";
 import Success from "./pages/Success";
 import Order from "./pages/Order";
 import MyOrders from "./pages/PesananSaya";
+import Register from "./pages/Register";
 import Header from "./components/Header";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/success" element={<Success />} />
           <Route path="/order" element={<Order />} />
           <Route path="/myorder" element={<MyOrders />} />
+          <Route path="/register" element={<Register />} />
           {/* Catch-all route untuk 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
