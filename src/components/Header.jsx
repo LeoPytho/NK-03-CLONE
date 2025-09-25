@@ -198,25 +198,6 @@ const Header = () => {
         {/* Desktop Navigation Menu */}
         <div className="nav-menu">
           <a href="#" className="nav-link" onClick={handleBerandaClick}>Beranda</a>
-          
-          {/* Dropdown Kategori */}
-          <div 
-            className="dropdown" 
-            ref={el => dropdownRefs.current.kategori = el}
-          >
-            <button 
-              className="dropdown-toggle"
-              onClick={() => handleDropdownToggle('kategori')}
-            >
-              Kategori <FaChevronDown />
-            </button>
-            <div className={`dropdown-menu ${dropdowns.kategori ? 'show' : ''}`}>
-              <a href="#" className="dropdown-item">Jersey Sepak Bola</a>
-              <a href="#" className="dropdown-item">Merchandise</a>
-              <a href="#" className="dropdown-item">Aksesoris</a>
-              <a href="#" className="dropdown-item">Koleksi Terbaru</a>
-            </div>
-          </div>
 
           <a href="#" className="nav-link">Promo</a>
           
@@ -281,9 +262,6 @@ const Header = () => {
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-nav-links">
             <a href="#" className="mobile-nav-link" onClick={handleBerandaClick}>Beranda</a>
-            <a href="#" className="mobile-nav-link">Jersey Sepak Bola</a>
-            <a href="#" className="mobile-nav-link">Merchandise</a>
-            <a href="#" className="mobile-nav-link">Aksesoris</a>
             <a href="#" className="mobile-nav-link">Promo</a>
             <a href="#" className="mobile-nav-link">FAQ</a>
             <a href="/myorder" className="mobile-nav-link">Pesanan Saya</a>
