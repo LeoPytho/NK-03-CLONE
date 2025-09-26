@@ -10,6 +10,7 @@ import Order from "./pages/Order";
 import MyOrders from "./pages/PesananSaya";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ProfilePage from "./pages/Profile";
 import Header from "./components/Header";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/myorder" element={<MyOrders />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<ProfilePage />} />
           {/* Catch-all route untuk 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
