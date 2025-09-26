@@ -860,8 +860,8 @@ const ProfilePage = () => {
                 <div className="status-list">
                   <div className="status-item">
                     <span>Member Status</span>
-                    <span className={getMemberStatusClass(profile.status_member)}>
-                      {profile.status_member?.toUpperCase() || 'BASIC'}
+                    <span className={getMemberStatusText(profile.status_member)}>
+                      {profile.status_member?.toUpperCase() || 'no'}
                     </span>
                   </div>
                   <div className="status-item">
