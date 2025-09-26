@@ -15,21 +15,30 @@ function Register() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
-  // Check if user is already registered
+  // Check if user is already registered or logged in
   useEffect(() => {
-    const checkRegistration = () => {
+    const checkRegistrationAndLogin = () => {
       try {
+        // Check if user is already logged in
+        const loginData = JSON.parse(sessionStorage.getItem('userLogin') || 'null');
+        if (loginData && loginData.isLoggedIn && loginData.token) {
+          // User already logged in, redirect to home
+          navigate('/');
+          return;
+        }
+
+        // Check if user is already registered
         const registrationData = JSON.parse(sessionStorage.getItem('userRegistration') || 'null');
         if (registrationData && registrationData.isRegistered) {
           // User already registered, redirect to home
           navigate('/');
         }
       } catch (error) {
-        console.error('Error checking registration status:', error);
+        console.error('Error checking registration/login status:', error);
       }
     };
 
-    checkRegistration();
+    checkRegistrationAndLogin();
   }, [navigate]);
 
   const showToast = (message, type = 'success') => {
@@ -137,7 +146,7 @@ function Register() {
       
       console.log('Sending request to API with:', requestBody); // Debug log
 
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,10 +183,8 @@ function Register() {
           
           showToast('Registrasi berhasil! Mengalihkan ke halaman utama...', 'success');
           
-          // Redirect to home page after 2 seconds
-          setTimeout(() => {
-            navigate('/');
-          }, 2000);
+          // Redirect to home page immediately (no delay needed as login page will handle it)
+          navigate('/');
 
         } else {
           // Registration failed
@@ -442,7 +449,7 @@ function Register() {
           width: 40px;
           height: 40px;
           border: 4px solid #f3f3f3;
-          border-top: 4px solid #ff6b6b;
+          border-top: 4px solid #7b1c1c;
           border-radius: 50%;
           animation: spin 1s linear infinite;
           margin-bottom: 20px;
@@ -461,7 +468,7 @@ function Register() {
         }
 
         .register-header {
-          background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+          background: linear-gradient(135deg, #7b1c1c, #6a1818);
           color: white;
           text-align: center;
           padding: 40px 20px;
@@ -516,10 +523,10 @@ function Register() {
 
         .form-input:focus {
           outline: none;
-          border-color: #ff6b6b;
+          border-color: #7b1c1c;
           background: white;
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
+          box-shadow: 0 4px 8px rgba(123, 28, 28, 0.2);
         }
 
         .form-input:disabled {
@@ -574,23 +581,23 @@ function Register() {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+          background: linear-gradient(135deg, #7b1c1c, #6a1818);
           color: white;
           border: 2px solid transparent;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background: linear-gradient(135deg, #ee5a52, #e04848);
+          background: linear-gradient(135deg, #6a1818, #5a1515);
         }
 
         .btn-outline {
           background: transparent;
-          border: 2px solid #ff6b6b;
-          color: #ff6b6b;
+          border: 2px solid #7b1c1c;
+          color: #7b1c1c;
         }
 
         .btn-outline:hover:not(:disabled) {
-          background: #ff6b6b;
+          background: #7b1c1c;
           color: white;
         }
 
@@ -635,7 +642,7 @@ function Register() {
 
         .info-list li:before {
           content: "•";
-          color: #ff6b6b;
+          color: #7b1c1c;
           font-weight: bold;
           position: absolute;
           left: 0;
