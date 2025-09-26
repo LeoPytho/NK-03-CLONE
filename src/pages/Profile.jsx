@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Edit, Save, X, MapPin, Phone, Mail, Calendar, Building, Globe, Shield, Activity, Clock, Eye, EyeOff } from 'lucide-react';
+import { User, Edit, Save, X, MapPin, Phone, Mail, Calendar, Building, Globe, Shield, Activity, Clock, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import './ProfilePage.css'; // Import the CSS file
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +13,9 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchingAddress, setSearchingAddress] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -28,6 +31,77 @@ const ProfilePage = () => {
   });
 
   const navigate = useNavigate();
+
+  // Function to search address from HERE Maps API
+  const searchAddress = async (query) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    setSearchingAddress(true);
+    try {
+      const apiKey = "ZcgqQFaE9azO73XJTasyhgHSVBST-aHpmj-VF4UM6sY"; // HERE Maps API Key
+      const url = `https://autosuggest.search.hereapi.com/v1/autosuggest?at=-6.2,106.8&q=${encodeURIComponent(
+        query
+      )}&limit=5&apiKey=${apiKey}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      // Filter only addresses/places that have address
+      const suggestions = data.items.filter(
+        (item) => item.address && item.address.label
+      );
+      setAddressSuggestions(suggestions);
+      setShowSuggestions(suggestions.length > 0);
+    } catch (err) {
+      console.error("Error searching address:", err);
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    } finally {
+      setSearchingAddress(false);
+    }
+  };
+
+  // Handle address suggestion selection
+  const selectAddressSuggestion = (suggestion) => {
+    const address = suggestion.address;
+    setAddressData(prev => ({
+      ...prev,
+      alamat: address.label,
+      city: address.city || prev.city,
+      province: address.state || prev.province,
+      country: address.countryName || prev.country
+    }));
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
+  };
+
+  // Get localStorage data for address
+  const getLocalStorageAddress = () => {
+    try {
+      const stored = localStorage.getItem('userAddress');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error reading address from localStorage:', error);
+      return null;
+    }
+  };
+
+  // Save address data to localStorage
+  const saveLocalStorageAddress = (addressData) => {
+    try {
+      localStorage.setItem('userAddress', JSON.stringify({
+        alamat: addressData.alamat,
+        postal_code: addressData.postal_code,
+        savedAt: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('Error saving address to localStorage:', error);
+    }
+  };
 
   // Get data from localStorage
   const getStoredData = () => {
@@ -70,18 +144,20 @@ const ProfilePage = () => {
 
   // Create mock profile from stored data when API fails
   const createMockProfileFromStoredData = (storedData) => {
+    const localAddress = getLocalStorageAddress();
+    
     const mockProfile = {
       profile_id: 'local_' + Date.now(),
       username: storedData.username || 'user',
       email: storedData.email || 'user@example.com',
       full_name: storedData.full_name || storedData.username || 'User',
-      alamat: storedData.alamat || '',
+      alamat: localAddress?.alamat || storedData.alamat || '',
       nomor_hp: storedData.nomor_hp || '',
       city: storedData.city || '',
       province: storedData.province || '',
-      postal_code: storedData.postal_code || '',
+      postal_code: localAddress?.postal_code || storedData.postal_code || '',
       country: storedData.country || 'Indonesia',
-      status_member: 'basic',
+      status_member: 'no',
       account_type: 'regular',
       is_active: true,
       is_verified: false,
@@ -119,10 +195,10 @@ const ProfilePage = () => {
       
       // Try to get profile using stored username first, then email
       if (storedData.username) {
-        url = `https://v2.jkt48connect.com/api/dashboard/public/profile/username/${encodeURIComponent(storedData.username)}?username=vzy&password=vzy`;
+        url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(storedData.username)}?username=vzy&password=vzy`;
         searchValue = storedData.username;
       } else if (storedData.email) {
-        url = `https://v2.jkt48connect.com/api/dashboard/public/profile/email/${encodeURIComponent(storedData.email)}?username=vzy&password=vzy`;
+        url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(storedData.email)}?username=vzy&password=vzy`;
         searchValue = storedData.email;
       } else {
         throw new Error('No username or email found in stored data');
@@ -141,9 +217,17 @@ const ProfilePage = () => {
       console.log('API Response:', data);
 
       if (response.ok && data.status) {
-        setProfile(data.data);
-        setupEditableData(data.data);
-        setupAddressData(data.data);
+        // Merge API data with localStorage address data
+        const localAddress = getLocalStorageAddress();
+        const profileData = {
+          ...data.data,
+          alamat: localAddress?.alamat || data.data.alamat,
+          postal_code: localAddress?.postal_code || data.data.postal_code
+        };
+        
+        setProfile(profileData);
+        setupEditableData(profileData);
+        setupAddressData(profileData);
         setSuccess('Profile loaded from server');
       } else {
         // API failed, create mock profile from stored data
@@ -205,6 +289,11 @@ const ProfilePage = () => {
       ...prev,
       [name]: value
     }));
+
+    // Trigger address search for alamat field
+    if (name === 'alamat') {
+      searchAddress(value);
+    }
   };
 
   // Handle password change form
@@ -222,7 +311,7 @@ const ProfilePage = () => {
     setError('Profile update is not available in public mode. Please log in to update your profile.');
   };
 
-  // Update address using the API
+  // Update address using the API (only city, province, country) and localStorage (alamat, postal_code)
   const handleUpdateAddress = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -230,63 +319,95 @@ const ProfilePage = () => {
     setSuccess('');
 
     try {
-      // Get authentication token (in real app, this would come from login)
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-      
-      if (!token) {
-        setError('Authentication required. Please log in to update your address.');
-        return;
-      }
-
       if (!addressData.alamat.trim()) {
         setError('Address (alamat) is required');
         return;
       }
 
-      const storedData = getStoredData();
-      let identifier = storedData.username || storedData.email;
-
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/update-address/search?username=vzy&password=vzy', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          identifier: identifier,
-          address_data: addressData
-        })
+      // Save alamat and postal_code to localStorage
+      saveLocalStorageAddress({
+        alamat: addressData.alamat,
+        postal_code: addressData.postal_code
       });
 
-      const result = await response.json();
+      // Get authentication token for API update
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      
+      if (token) {
+        // Update city, province, country via API
+        const storedData = getStoredData();
+        let identifier = storedData.username || storedData.email;
 
-      if (response.ok && result.status) {
-        // Update local profile data
+        const response = await fetch('https://v2.jkt48connect.com/api/profiles/update-address/search', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            identifier: identifier,
+            address_data: {
+              alamat: '', // Don't send alamat to API
+              city: addressData.city,
+              province: addressData.province,
+              country: addressData.country
+              // Don't send postal_code to API
+            }
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status) {
+          // Update local profile data
+          setProfile(prev => ({
+            ...prev,
+            alamat: addressData.alamat,
+            city: addressData.city,
+            province: addressData.province,
+            postal_code: addressData.postal_code,
+            country: addressData.country,
+            updated_at: new Date().toISOString()
+          }));
+
+          setSuccess('Address updated successfully! Complete address and postal code saved locally.');
+        } else {
+          // API failed, but still update local data
+          setProfile(prev => ({
+            ...prev,
+            alamat: addressData.alamat,
+            postal_code: addressData.postal_code,
+            updated_at: new Date().toISOString()
+          }));
+
+          setSuccess('Address saved locally. Some fields may not sync to server without authentication.');
+        }
+      } else {
+        // No authentication, just update local data
         setProfile(prev => ({
           ...prev,
           alamat: addressData.alamat,
-          city: addressData.city,
-          province: addressData.province,
           postal_code: addressData.postal_code,
-          country: addressData.country,
           updated_at: new Date().toISOString()
         }));
 
-        setSuccess('Address updated successfully!');
-        setEditingAddress(false);
-        
-        // Refresh profile to get latest data
-        setTimeout(() => {
-          fetchProfile();
-        }, 1000);
-        
-      } else {
-        setError(result.message || 'Failed to update address');
+        setSuccess('Address saved locally. Login to sync all address data to server.');
       }
 
+      setEditingAddress(false);
+      
     } catch (error) {
       console.error('Update address error:', error);
-      setError('Failed to update address. Please check your connection and try again.');
+      
+      // Even if API fails, save to localStorage
+      setProfile(prev => ({
+        ...prev,
+        alamat: addressData.alamat,
+        postal_code: addressData.postal_code,
+        updated_at: new Date().toISOString()
+      }));
+
+      setSuccess('Address saved locally. Server update failed - please check your connection.');
     } finally {
       setSaving(false);
     }
@@ -312,16 +433,25 @@ const ProfilePage = () => {
     }
   };
 
-  // Get member status badge class
+  // Get member status badge class based on API response
   const getMemberStatusClass = (status) => {
+    if (status === 'no') return 'badge badge-basic';
     switch (status) {
       case 'premium': return 'badge badge-premium';
       case 'vip': return 'badge badge-vip';
       case 'gold': return 'badge badge-premium';
       case 'silver': return 'badge badge-basic';
       case 'basic': return 'badge badge-basic';
+      case 'yes': return 'badge badge-premium';
       default: return 'badge badge-basic';
     }
+  };
+
+  // Get member status display text
+  const getMemberStatusText = (status) => {
+    if (status === 'no') return 'NO MEMBER';
+    if (status === 'yes') return 'MEMBER';
+    return status?.toUpperCase() || 'NO MEMBER';
   };
 
   if (loading) {
@@ -369,7 +499,7 @@ const ProfilePage = () => {
                   <p className="profile-username">@{profile.username}</p>
                   <div className="profile-badges">
                     <span className={getMemberStatusClass(profile.status_member)}>
-                      {profile.status_member?.toUpperCase() || 'BASIC'}
+                      {getMemberStatusText(profile.status_member)}
                     </span>
                     {profile.is_verified && (
                       <span className="badge badge-verified">
@@ -525,17 +655,66 @@ const ProfilePage = () => {
 
                 {editingAddress ? (
                   <form onSubmit={handleUpdateAddress} className="profile-form">
-                    <div className="form-group">
-                      <label className="form-label">Address *</label>
+                    <div className="form-group" style={{ position: 'relative' }}>
+                      <label className="form-label">
+                        Complete Address * 
+                        <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal' }}>
+                          (Saved locally)
+                        </span>
+                      </label>
                       <textarea
                         name="alamat"
                         value={addressData.alamat}
                         onChange={handleAddressChange}
-                        placeholder="Enter your complete address..."
+                        placeholder="Type to search addresses..."
                         className="form-input"
                         rows="3"
                         required
                       />
+                      
+                      {/* Address Suggestions */}
+                      {showSuggestions && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          backgroundColor: 'white',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          zIndex: 10,
+                          maxHeight: '200px',
+                          overflowY: 'auto'
+                        }}>
+                          {searchingAddress && (
+                            <div style={{ padding: '0.75rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                              Searching addresses...
+                            </div>
+                          )}
+                          {addressSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              onClick={() => selectAddressSuggestion(suggestion)}
+                              style={{
+                                padding: '0.75rem',
+                                borderBottom: index < addressSuggestions.length - 1 ? '1px solid #e5e7eb' : 'none',
+                                cursor: 'pointer',
+                                fontSize: '0.875rem'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            >
+                              <div style={{ fontWeight: '500' }}>{suggestion.title}</div>
+                              {suggestion.address.label && (
+                                <div style={{ color: '#6b7280', fontSize: '0.8rem' }}>
+                                  {suggestion.address.label}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="form-row">
@@ -566,7 +745,12 @@ const ProfilePage = () => {
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label className="form-label">Postal Code</label>
+                        <label className="form-label">
+                          Postal Code 
+                          <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'normal' }}>
+                            (Saved locally)
+                          </span>
+                        </label>
                         <input
                           type="text"
                           name="postal_code"
@@ -595,6 +779,13 @@ const ProfilePage = () => {
                       </div>
                     </div>
 
+                    <div style={{ marginTop: '1rem', padding: '0.75rem', backgroundColor: '#fffbeb', border: '1px solid #fbbf24', borderRadius: '8px', fontSize: '0.875rem' }}>
+                      <p style={{ margin: 0, color: '#92400e' }}>
+                        <strong>Note:</strong> Complete address and postal code will be saved locally on your device. 
+                        City, province, and country will be synced to the server if authenticated.
+                      </p>
+                    </div>
+
                     <div className="form-actions">
                       <button
                         type="submit"
@@ -613,6 +804,11 @@ const ProfilePage = () => {
                       <div className="profile-info-content">
                         <p>Complete Address</p>
                         <p>{profile.alamat || 'No address provided'}</p>
+                        {profile.alamat && (
+                          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            (Stored locally)
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -637,6 +833,11 @@ const ProfilePage = () => {
                       <div className="profile-info-content">
                         <p>Postal Code</p>
                         <p>{profile.postal_code || '-'}</p>
+                        {profile.postal_code && (
+                          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                            (Stored locally)
+                          </span>
+                        )}
                       </div>
                     </div>
 
