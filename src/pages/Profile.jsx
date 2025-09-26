@@ -347,7 +347,7 @@ const ProfilePage = () => {
           body: JSON.stringify({
             identifier: identifier,
             address_data: {
-              alamat: '', // Don't send alamat to API
+              alamat: addressData.alamat, // Don't send alamat to API
               city: addressData.city,
               province: addressData.province,
               country: addressData.country
