@@ -11,21 +11,33 @@ function Login() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
-  // Check if user is already logged in
+  // Check if user is already logged in or registered
   useEffect(() => {
-    const checkLogin = () => {
+    const checkLoginAndRegistration = () => {
       try {
+        // Check if user is already logged in
         const loginData = JSON.parse(sessionStorage.getItem('userLogin') || 'null');
         if (loginData && loginData.isLoggedIn && loginData.token) {
           // User already logged in, redirect to home
           navigate('/');
+          return;
+        }
+
+        // Check if user just registered (auto redirect after registration)
+        const registrationData = JSON.parse(sessionStorage.getItem('userRegistration') || 'null');
+        if (registrationData && registrationData.isRegistered) {
+          console.log('User just registered, redirecting to home...');
+          // Clear registration data after redirect
+          sessionStorage.removeItem('userRegistration');
+          navigate('/');
+          return;
         }
       } catch (error) {
-        console.error('Error checking login status:', error);
+        console.error('Error checking login/registration status:', error);
       }
     };
 
-    checkLogin();
+    checkLoginAndRegistration();
   }, [navigate]);
 
   const showToast = (message, type = 'success') => {
@@ -348,7 +360,7 @@ function Login() {
           width: 40px;
           height: 40px;
           border: 4px solid #f3f3f3;
-          border-top: 4px solid #4CAF50;
+          border-top: 4px solid #7b1c1c;
           border-radius: 50%;
           animation: spin 1s linear infinite;
           margin-bottom: 20px;
@@ -367,7 +379,7 @@ function Login() {
         }
 
         .login-header {
-          background: #7b1c1c;
+          background: linear-gradient(135deg, #7b1c1c, #6a1818);
           color: white;
           text-align: center;
           padding: 40px 20px;
@@ -424,9 +436,9 @@ function Login() {
         }
 
         .method-btn.active {
-          background: #4CAF50;
+          background: #7b1c1c;
           color: white;
-          box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+          box-shadow: 0 2px 4px rgba(123, 28, 28, 0.3);
         }
 
         .method-btn:disabled {
@@ -459,10 +471,10 @@ function Login() {
 
         .form-input:focus {
           outline: none;
-          border-color: #4CAF50;
+          border-color: #7b1c1c;
           background: white;
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+          box-shadow: 0 4px 8px rgba(123, 28, 28, 0.2);
         }
 
         .form-input:disabled {
@@ -489,14 +501,14 @@ function Login() {
         }
 
         .link {
-          color: #4CAF50;
+          color: #7b1c1c;
           text-decoration: none;
           font-size: 14px;
           transition: color 0.3s;
         }
 
         .link:hover {
-          color: #45a049;
+          color: #6a1818;
           text-decoration: underline;
         }
 
@@ -528,23 +540,23 @@ function Login() {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #4CAF50, #45a049);
+          background: linear-gradient(135deg, #7b1c1c, #6a1818);
           color: white;
           border: 2px solid transparent;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background: linear-gradient(135deg, #45a049, #3d8b40);
+          background: linear-gradient(135deg, #6a1818, #5a1515);
         }
 
         .btn-outline {
           background: transparent;
-          border: 2px solid #4CAF50;
-          color: #4CAF50;
+          border: 2px solid #7b1c1c;
+          color: #7b1c1c;
         }
 
         .btn-outline:hover:not(:disabled) {
-          background: #4CAF50;
+          background: #7b1c1c;
           color: white;
         }
 
@@ -589,7 +601,7 @@ function Login() {
 
         .info-list li:before {
           content: "•";
-          color: #4CAF50;
+          color: #7b1c1c;
           font-weight: bold;
           position: absolute;
           left: 0;
