@@ -203,7 +203,7 @@ function Register() {
       
       console.log('Sending request to API with:', requestBody); // Debug log
 
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register', {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -353,11 +353,6 @@ function Register() {
         <div className="register-header">
           <h1>Registrasi Akun</h1>
           <p>Buat akun baru untuk melanjutkan</p>
-          {hasSavedData() && (
-            <div className="saved-data-notice">
-              <span>📝 Data form tersimpan otomatis saat Anda mengetik</span>
-            </div>
-          )}
         </div>
 
         <div className="register-form-container">
@@ -490,17 +485,6 @@ function Register() {
               >
                 Reset Form
               </button>
-
-              {hasSavedData() && (
-                <button 
-                  type="button" 
-                  className="btn btn-warning btn-full"
-                  onClick={handleClearSavedData}
-                  disabled={loading}
-                >
-                  Hapus Data Tersimpan
-                </button>
-              )}
             </div>
 
             {/* Debug info - remove in production */}
@@ -533,16 +517,7 @@ function Register() {
               </ul>
             </div>
 
-            <div className="info-card storage-info">
-              <h3>💾 Penyimpanan Otomatis</h3>
-              <ul className="info-list">
-                <li>Data form disimpan otomatis saat Anda mengetik</li>
-                <li>Password tidak disimpan untuk keamanan</li>
-                <li>Data tersimpan di browser lokal Anda</li>
-                <li>Gunakan tombol "Reset Form" untuk menghapus semua data</li>
-                <li>Data akan dihapus otomatis setelah registrasi berhasil</li>
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>
