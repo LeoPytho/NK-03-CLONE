@@ -15,6 +15,32 @@ function Register() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
+  // Load saved form data from localStorage on component mount
+  useEffect(() => {
+    const loadSavedFormData = () => {
+      try {
+        const savedFormData = localStorage.getItem('registerFormData');
+        if (savedFormData) {
+          const parsedData = JSON.parse(savedFormData);
+          console.log('Loading saved form data:', parsedData);
+          setFormData(prev => ({
+            ...prev,
+            ...parsedData,
+            // Don't load passwords for security reasons
+            password: '',
+            confirmPassword: ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading saved form data:', error);
+        // Clear corrupted data
+        localStorage.removeItem('registerFormData');
+      }
+    };
+
+    loadSavedFormData();
+  }, []);
+
   // Check if user is already registered or logged in
   useEffect(() => {
     const checkRegistrationAndLogin = () => {
@@ -40,6 +66,37 @@ function Register() {
 
     checkRegistrationAndLogin();
   }, [navigate]);
+
+  // Save form data to localStorage whenever formData changes
+  useEffect(() => {
+    const saveFormDataToLocalStorage = () => {
+      try {
+        // Create a copy without passwords for security
+        const dataToSave = {
+          username: formData.username,
+          email: formData.email,
+          full_name: formData.full_name,
+          alamat: formData.alamat,
+          nomor_hp: formData.nomor_hp
+          // Don't save passwords to localStorage for security reasons
+        };
+
+        // Only save if there's meaningful data
+        const hasData = Object.values(dataToSave).some(value => value.trim() !== '');
+        
+        if (hasData) {
+          localStorage.setItem('registerFormData', JSON.stringify(dataToSave));
+          console.log('Form data saved to localStorage:', dataToSave);
+        }
+      } catch (error) {
+        console.error('Error saving form data to localStorage:', error);
+      }
+    };
+
+    // Debounce the save operation to avoid too frequent saves
+    const timeoutId = setTimeout(saveFormDataToLocalStorage, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.username, formData.email, formData.full_name, formData.alamat, formData.nomor_hp]);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -181,6 +238,19 @@ function Register() {
           // Store registration data in sessionStorage
           sessionStorage.setItem('userRegistration', JSON.stringify(registrationData));
           
+          // Store successful registration data in localStorage for future reference
+          const successfulRegistrationData = {
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            full_name: formData.full_name.trim(),
+            registeredAt: new Date().toISOString(),
+            isSuccessfullyRegistered: true
+          };
+          localStorage.setItem('successfulRegistration', JSON.stringify(successfulRegistrationData));
+          
+          // Clear the form data from localStorage since registration is complete
+          localStorage.removeItem('registerFormData');
+          
           showToast('Registrasi berhasil! Mengalihkan ke halaman utama...', 'success');
           
           // Redirect to home page immediately (no delay needed as login page will handle it)
@@ -223,13 +293,36 @@ function Register() {
       alamat: '',
       nomor_hp: ''
     });
-    console.log('Form reset'); // Debug log
+    
+    // Clear saved form data from localStorage
+    localStorage.removeItem('registerFormData');
+    console.log('Form reset and localStorage cleared'); // Debug log
+    
+    showToast('Form telah direset', 'success');
+  };
+
+  const handleClearSavedData = () => {
+    // Clear all registration-related data from localStorage
+    localStorage.removeItem('registerFormData');
+    localStorage.removeItem('successfulRegistration');
+    showToast('Data tersimpan telah dihapus', 'success');
+    console.log('All saved registration data cleared from localStorage');
   };
 
   // Debug: Log form data changes
   useEffect(() => {
     console.log('Form data changed:', formData);
   }, [formData]);
+
+  // Check if there's saved data
+  const hasSavedData = () => {
+    try {
+      const savedData = localStorage.getItem('registerFormData');
+      return savedData && JSON.parse(savedData);
+    } catch {
+      return false;
+    }
+  };
 
   if (loading) {
     return (
@@ -260,6 +353,11 @@ function Register() {
         <div className="register-header">
           <h1>Registrasi Akun</h1>
           <p>Buat akun baru untuk melanjutkan</p>
+          {hasSavedData() && (
+            <div className="saved-data-notice">
+              <span>📝 Data form tersimpan otomatis saat Anda mengetik</span>
+            </div>
+          )}
         </div>
 
         <div className="register-form-container">
@@ -356,7 +454,7 @@ function Register() {
                 disabled={loading}
                 autoComplete="new-password"
               />
-              <small className="form-hint">Minimal 6 karakter</small>
+              <small className="form-hint">Minimal 6 karakter (tidak tersimpan untuk keamanan)</small>
             </div>
 
             <div className="form-group">
@@ -392,6 +490,17 @@ function Register() {
               >
                 Reset Form
               </button>
+
+              {hasSavedData() && (
+                <button 
+                  type="button" 
+                  className="btn btn-warning btn-full"
+                  onClick={handleClearSavedData}
+                  disabled={loading}
+                >
+                  Hapus Data Tersimpan
+                </button>
+              )}
             </div>
 
             {/* Debug info - remove in production */}
@@ -405,6 +514,7 @@ function Register() {
               <div>Password: {"*".repeat(formData.password.length)} (length: {formData.password.length})</div>
               <div>Confirm Password: {"*".repeat(formData.confirmPassword.length)} (length: {formData.confirmPassword.length})</div>
               <div>Loading: {loading ? 'Yes' : 'No'}</div>
+              <div>Has Saved Data: {hasSavedData() ? 'Yes' : 'No'}</div>
             </div>
           </form>
 
@@ -420,6 +530,17 @@ function Register() {
                 <li>Password minimal 6 karakter</li>
                 <li>Pastikan konfirmasi password sesuai</li>
                 <li>Data akan disimpan dengan aman</li>
+              </ul>
+            </div>
+
+            <div className="info-card storage-info">
+              <h3>💾 Penyimpanan Otomatis</h3>
+              <ul className="info-list">
+                <li>Data form disimpan otomatis saat Anda mengetik</li>
+                <li>Password tidak disimpan untuk keamanan</li>
+                <li>Data tersimpan di browser lokal Anda</li>
+                <li>Gunakan tombol "Reset Form" untuk menghapus semua data</li>
+                <li>Data akan dihapus otomatis setelah registrasi berhasil</li>
               </ul>
             </div>
           </div>
@@ -483,6 +604,16 @@ function Register() {
         .register-header p {
           font-size: 1.1rem;
           opacity: 0.9;
+          margin-bottom: 0;
+        }
+
+        .saved-data-notice {
+          margin-top: 15px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 0.9rem;
+          border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .register-form-container {
@@ -601,6 +732,16 @@ function Register() {
           color: white;
         }
 
+        .btn-warning {
+          background: linear-gradient(135deg, #ff6b35, #f7931e);
+          color: white;
+          border: 2px solid transparent;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+          background: linear-gradient(135deg, #e55a2e, #e8841a);
+        }
+
         .btn-full {
           width: 100%;
         }
@@ -609,6 +750,7 @@ function Register() {
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
+          gap: 20px;
         }
 
         .info-card {
@@ -616,6 +758,11 @@ function Register() {
           border-radius: 8px;
           padding: 20px;
           border: 1px solid #e1e5e9;
+        }
+
+        .storage-info {
+          background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+          border-color: #c3e6cb;
         }
 
         .info-card h3 {
