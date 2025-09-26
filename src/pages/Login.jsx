@@ -367,7 +367,7 @@ function Login() {
         }
 
         .login-header {
-          background: linear-gradient(135deg, #4CAF50, #45a049);
+          background: #7b1c1c;
           color: white;
           text-align: center;
           padding: 40px 20px;
