@@ -5,20 +5,11 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     password: '',
-    confirmPassword: '',
-    alamat: '',
-    nomor_hp: '',
-    full_name: '',
-    date_of_birth: '',
-    gender: '',
-    city: '',
-    province: '',
-    postal_code: '',
-    country: 'Indonesia'
+    confirmPassword: ''
   });
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const navigate = useNavigate();
 
   // Check if user is already registered
   useEffect(() => {
@@ -26,8 +17,8 @@ function Register() {
       try {
         const registrationData = JSON.parse(sessionStorage.getItem('userRegistration') || 'null');
         if (registrationData && registrationData.isRegistered) {
-          // User already registered, show message
-          showToast('Anda sudah terdaftar!', 'success');
+          // User already registered, redirect to home
+          navigate('/');
         }
       } catch (error) {
         console.error('Error checking registration status:', error);
@@ -35,7 +26,7 @@ function Register() {
     };
 
     checkRegistration();
-  }, []);
+  }, [navigate]);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -53,6 +44,8 @@ function Register() {
   };
 
   const validateForm = () => {
+    console.log('Validating form with data:', formData); // Debug log
+    
     if (!formData.username.trim()) {
       showToast('Username harus diisi', 'error');
       return false;
@@ -60,11 +53,6 @@ function Register() {
 
     if (formData.username.length < 3) {
       showToast('Username minimal 3 karakter', 'error');
-      return false;
-    }
-
-    if (!formData.email.trim()) {
-      showToast('Email harus diisi', 'error');
       return false;
     }
 
@@ -83,92 +71,94 @@ function Register() {
       return false;
     }
 
-    if (!formData.alamat.trim()) {
-      showToast('Alamat harus diisi', 'error');
-      return false;
-    }
-
-    if (!formData.nomor_hp.trim()) {
-      showToast('Nomor HP harus diisi', 'error');
-      return false;
-    }
-
-    if (!formData.full_name.trim()) {
-      showToast('Nama lengkap harus diisi', 'error');
-      return false;
-    }
-
     return true;
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData); // Debug log
+    
     if (!validateForm()) {
+      console.log('Form validation failed'); // Debug log
       return;
     }
 
     setLoading(true);
+    console.log('Starting registration process...'); // Debug log
 
     try {
-      // Prepare data for API
-      const requestData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        alamat: formData.alamat,
-        nomor_hp: formData.nomor_hp,
-        full_name: formData.full_name,
-        date_of_birth: formData.date_of_birth || null,
-        gender: formData.gender || null,
-        city: formData.city || null,
-        province: formData.province || null,
-        postal_code: formData.postal_code || null,
-        country: formData.country
+      const requestBody = {
+        username: formData.username.trim(),
+        password: formData.password
       };
+      
+      console.log('Sending request to API with:', requestBody); // Debug log
 
-      // Add URL params as requested
-      const url = new URL('https://v2.jkt48connect.com/api/dashboard/register');
-      url.searchParams.append('username', 'vzy');
-      url.searchParams.append('password', 'vzy');
-
-      const response = await fetch(url.toString(), {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('Response status:', response.status); // Debug log
+      console.log('Response headers:', response.headers); // Debug log
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server response is not JSON');
+      }
+
       const data = await response.json();
+      console.log('Response data:', data); // Debug log
 
-      if (response.ok && data.status) {
-        // Registration successful
-        const registrationData = {
-          isRegistered: true,
-          username: formData.username,
-          registeredAt: new Date().toISOString(),
-          userData: data.data || {}
-        };
+      if (response.ok) {
+        // Check for different success indicators
+        if (data.status === true || data.success === true || response.status === 200 || response.status === 201) {
+          // Registration successful
+          const registrationData = {
+            isRegistered: true,
+            username: formData.username.trim(),
+            registeredAt: new Date().toISOString(),
+            userData: data.data || data.user || {}
+          };
 
-        // Store registration data in sessionStorage
-        sessionStorage.setItem('userRegistration', JSON.stringify(registrationData));
-        
-        showToast('Registrasi berhasil!', 'success');
-        
-        // Show success message
-        setTimeout(() => {
-          showToast('Data telah tersimpan dengan aman.', 'success');
-        }, 2000);
+          // Store registration data in sessionStorage
+          sessionStorage.setItem('userRegistration', JSON.stringify(registrationData));
+          
+          showToast('Registrasi berhasil! Mengalihkan ke halaman utama...', 'success');
+          
+          // Redirect to home page after 2 seconds
+          setTimeout(() => {
+            navigate('/');
+          }, 2000);
 
+        } else {
+          // Registration failed
+          const errorMessage = data.message || data.error || 'Registrasi gagal. Silakan coba lagi.';
+          showToast(errorMessage, 'error');
+        }
       } else {
-        // Registration failed
-        showToast(data.message || 'Registrasi gagal. Silakan coba lagi.', 'error');
+        // HTTP error status
+        const errorMessage = data.message || data.error || `HTTP Error: ${response.status}`;
+        showToast(errorMessage, 'error');
+        console.error('HTTP Error:', response.status, errorMessage);
       }
 
     } catch (error) {
-      console.error('Registration error:', error);
-      showToast('Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
+      console.error('Registration error details:', error);
+      
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        showToast('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
+      } else if (error.message.includes('JSON')) {
+        showToast('Server memberikan respons yang tidak valid.', 'error');
+      } else {
+        showToast('Terjadi kesalahan: ' + error.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -177,20 +167,16 @@ function Register() {
   const handleReset = () => {
     setFormData({
       username: '',
-      email: '',
       password: '',
-      confirmPassword: '',
-      alamat: '',
-      nomor_hp: '',
-      full_name: '',
-      date_of_birth: '',
-      gender: '',
-      city: '',
-      province: '',
-      postal_code: '',
-      country: 'Indonesia'
+      confirmPassword: ''
     });
+    console.log('Form reset'); // Debug log
   };
+
+  // Debug: Log form data changes
+  useEffect(() => {
+    console.log('Form data changed:', formData);
+  }, [formData]);
 
   if (loading) {
     return (
@@ -224,197 +210,53 @@ function Register() {
         </div>
 
         <div className="register-form-container">
-          <div onSubmit={handleRegister} className="register-form">
-            {/* Required Fields */}
-            <div className="form-section">
-              <h3>Data Wajib</h3>
-              
-              <div className="form-group">
-                <label htmlFor="username">Username *</label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan username"
-                  className="form-input"
-                  required
-                  minLength={3}
-                />
-                <small className="form-hint">Minimal 3 karakter</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email *</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan email"
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="full_name">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan nama lengkap"
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="nomor_hp">Nomor HP *</label>
-                <input
-                  type="tel"
-                  id="nomor_hp"
-                  name="nomor_hp"
-                  value={formData.nomor_hp}
-                  onChange={handleInputChange}
-                  placeholder="Contoh: 081234567890"
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="alamat">Alamat *</label>
-                <textarea
-                  id="alamat"
-                  name="alamat"
-                  value={formData.alamat}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan alamat lengkap"
-                  className="form-input form-textarea"
-                  required
-                  rows={3}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="password">Password *</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan password"
-                  className="form-input"
-                  required
-                  minLength={6}
-                />
-                <small className="form-hint">Minimal 6 karakter</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Konfirmasi Password *</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Ulangi password"
-                  className="form-input"
-                  required
-                />
-                <small className="form-hint">Harus sama dengan password di atas</small>
-              </div>
+          <form onSubmit={handleRegister} className="register-form" noValidate>
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                placeholder="Masukkan username"
+                className="form-input"
+                disabled={loading}
+                autoComplete="username"
+              />
+              <small className="form-hint">Minimal 3 karakter</small>
             </div>
 
-            {/* Optional Fields */}
-            <div className="form-section">
-              <h3>Data Tambahan (Opsional)</h3>
-              
-              <div className="form-group">
-                <label htmlFor="date_of_birth">Tanggal Lahir</label>
-                <input
-                  type="date"
-                  id="date_of_birth"
-                  name="date_of_birth"
-                  value={formData.date_of_birth}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Masukkan password"
+                className="form-input"
+                disabled={loading}
+                autoComplete="new-password"
+              />
+              <small className="form-hint">Minimal 6 karakter</small>
+            </div>
 
-              <div className="form-group">
-                <label htmlFor="gender">Jenis Kelamin</label>
-                <select
-                  id="gender"
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  className="form-input"
-                >
-                  <option value="">Pilih jenis kelamin</option>
-                  <option value="male">Laki-laki</option>
-                  <option value="female">Perempuan</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="city">Kota</label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan kota"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="province">Provinsi</label>
-                <input
-                  type="text"
-                  id="province"
-                  name="province"
-                  value={formData.province}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan provinsi"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="postal_code">Kode Pos</label>
-                <input
-                  type="text"
-                  id="postal_code"
-                  name="postal_code"
-                  value={formData.postal_code}
-                  onChange={handleInputChange}
-                  placeholder="Masukkan kode pos"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="country">Negara</label>
-                <input
-                  type="text"
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  placeholder="Indonesia"
-                  className="form-input"
-                />
-              </div>
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Konfirmasi Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                placeholder="Ulangi password"
+                className="form-input"
+                disabled={loading}
+                autoComplete="new-password"
+              />
+              <small className="form-hint">Harus sama dengan password di atas</small>
             </div>
 
             <div className="form-actions">
@@ -435,17 +277,24 @@ function Register() {
                 Reset Form
               </button>
             </div>
-          </div>
+
+            {/* Debug info - remove in production */}
+            <div style={{ marginTop: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '4px', fontSize: '12px' }}>
+              <strong>Debug Info:</strong>
+              <div>Username: "{formData.username}" (length: {formData.username.length})</div>
+              <div>Password: {"*".repeat(formData.password.length)} (length: {formData.password.length})</div>
+              <div>Confirm Password: {"*".repeat(formData.confirmPassword.length)} (length: {formData.confirmPassword.length})</div>
+              <div>Loading: {loading ? 'Yes' : 'No'}</div>
+            </div>
+          </form>
 
           <div className="register-info">
             <div className="info-card">
               <h3>Informasi Registrasi</h3>
               <ul className="info-list">
                 <li>Username harus unik dan minimal 3 karakter</li>
-                <li>Email harus valid dan unik</li>
                 <li>Password harus minimal 6 karakter</li>
-                <li>Nama lengkap, nomor HP, dan alamat wajib diisi</li>
-                <li>Data tambahan bersifat opsional</li>
+                <li>Pastikan konfirmasi password sesuai</li>
                 <li>Data akan disimpan dengan aman</li>
               </ul>
             </div>
@@ -455,7 +304,7 @@ function Register() {
 
       <style jsx>{`
         .container {
-          max-width: 1000px;
+          max-width: 800px;
           margin: 0 auto;
           padding: 20px;
           min-height: 100vh;
@@ -522,22 +371,7 @@ function Register() {
         .register-form {
           display: flex;
           flex-direction: column;
-          gap: 25px;
-        }
-
-        .form-section {
-          display: flex;
-          flex-direction: column;
           gap: 20px;
-        }
-
-        .form-section h3 {
-          color: #333;
-          font-size: 1.2rem;
-          font-weight: 600;
-          margin-bottom: 10px;
-          padding-bottom: 8px;
-          border-bottom: 2px solid #ff6b6b;
         }
 
         .form-group {
@@ -561,12 +395,6 @@ function Register() {
           font-size: 16px;
           transition: all 0.3s;
           background: #f8f9fa;
-          font-family: inherit;
-        }
-
-        .form-textarea {
-          resize: vertical;
-          min-height: 80px;
         }
 
         .form-input:focus {
@@ -575,6 +403,11 @@ function Register() {
           background: white;
           transform: translateY(-1px);
           box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
+        }
+
+        .form-input:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         .form-hint {
@@ -653,8 +486,6 @@ function Register() {
           border-radius: 8px;
           padding: 20px;
           border: 1px solid #e1e5e9;
-          position: sticky;
-          top: 20px;
         }
 
         .info-card h3 {
