@@ -65,7 +65,38 @@ const ProfilePage = () => {
     }
   };
 
-  // Fetch profile data using public API
+  // Create mock profile from stored data when API fails
+  const createMockProfileFromStoredData = (storedData) => {
+    const mockProfile = {
+      profile_id: 'local_' + Date.now(),
+      username: storedData.username || 'user',
+      email: storedData.email || 'user@example.com',
+      full_name: storedData.full_name || storedData.username || 'User',
+      alamat: storedData.alamat || '',
+      nomor_hp: storedData.nomor_hp || '',
+      city: storedData.city || '',
+      province: storedData.province || '',
+      country: storedData.country || 'Indonesia',
+      status_member: 'basic',
+      account_type: 'regular',
+      is_active: true,
+      is_verified: false,
+      bio: '',
+      occupation: '',
+      company: '',
+      website: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    setProfile(mockProfile);
+    setupEditableData(mockProfile);
+    setSuccess('Displaying profile from local storage data');
+    setLoading(false);
+    console.log('Created mock profile from stored data:', mockProfile);
+  };
+
+  // Enhanced fetchProfile with fallback to mock profile
   const fetchProfile = async (searchType, searchValue) => {
     setLoading(true);
     setError('');
@@ -76,19 +107,19 @@ const ProfilePage = () => {
       // Construct URL based on search type
       switch (searchType) {
         case 'username':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(searchValue)}`;
+          url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
           break;
         case 'email':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(searchValue)}`;
+          url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
           break;
         case 'name':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/name/${encodeURIComponent(searchValue)}`;
+          url = `https://v2.jkt48connect.com/api/profiles/public/profile/name/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
           break;
         case 'phone':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/phone/${encodeURIComponent(searchValue)}`;
+          url = `https://v2.jkt48connect.com/api/profiles/public/profile/phone/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
           break;
         case 'id':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/id/${encodeURIComponent(searchValue)}`;
+          url = `https://v2.jkt48connect.com/api/profiles/public/profile/id/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
           break;
         default:
           throw new Error('Invalid search type');
@@ -114,22 +145,43 @@ const ProfilePage = () => {
             setSuccess(`Found ${data.data.length} profile(s). Showing first result.`);
             setupEditableData(data.data[0]);
           } else {
-            setError('No profiles found');
-            setProfile(null);
+            // No API results, try to create mock profile from stored data
+            const storedData = getStoredData();
+            if (storedData) {
+              createMockProfileFromStoredData(storedData);
+            } else {
+              setError('No profiles found');
+              setProfile(null);
+            }
           }
         } else {
           setProfile(data.data);
-          setSuccess(data.message || 'Profile loaded successfully');
+          setSuccess('Profile loaded from server');
           setupEditableData(data.data);
         }
       } else {
-        setError(data.message || 'Profile not found or not accessible');
-        setProfile(null);
+        // API failed, try to create mock profile from stored data
+        console.log('API failed, creating mock profile from stored data');
+        const storedData = getStoredData();
+        if (storedData) {
+          createMockProfileFromStoredData(storedData);
+        } else {
+          setError(data.message || 'Profile not found or not accessible');
+          setProfile(null);
+        }
       }
     } catch (error) {
       console.error('Fetch profile error:', error);
-      setError('Error loading profile: ' + error.message);
-      setProfile(null);
+      
+      // Network error or other issues - try to create mock profile from stored data
+      const storedData = getStoredData();
+      if (storedData) {
+        createMockProfileFromStoredData(storedData);
+        setError('Could not connect to server. Showing data from local storage.');
+      } else {
+        setError('Error loading profile: ' + error.message);
+        setProfile(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -156,18 +208,20 @@ const ProfilePage = () => {
     console.log('Stored data found:', storedData);
 
     if (storedData) {
-      // Try to load profile using stored username first, then email
+      // Try to load profile using stored username first, then email, then name
       if (storedData.username) {
         fetchProfile('username', storedData.username);
       } else if (storedData.email) {
         fetchProfile('email', storedData.email);
+      } else if (storedData.full_name) {
+        fetchProfile('name', storedData.full_name);
       } else {
-        setSearchMode(true);
-        setLoading(false);
+        // If no useful data found, create a mock profile from stored data
+        createMockProfileFromStoredData(storedData);
       }
     } else {
-      // No stored data, show search mode
-      setSearchMode(true);
+      // No stored data at all, show empty state
+      setError('No profile data found in localStorage. Please register or login first.');
       setLoading(false);
     }
   }, []);
@@ -250,7 +304,7 @@ const ProfilePage = () => {
   };
 
   // Show search form if no profile loaded or in search mode
-  if (searchMode || (!profile && !loading)) {
+  if (searchMode) {
     return (
       <div className="profile-container">
         <div className="profile-wrapper">
@@ -569,7 +623,7 @@ const ProfilePage = () => {
             </div>
 
             {/* Profile Stats */}
-            <div className="sidebar-cards">
+                          <div className="sidebar-cards">
               <div className="profile-card">
                 <h3>Account Status</h3>
                 <div className="status-list">
@@ -620,8 +674,15 @@ const ProfilePage = () => {
 
               <div className="profile-card">
                 <div style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', fontSize: '0.875rem', color: '#6b7280' }}>
-                  <p style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#374151' }}>Public Profile</p>
-                  <p>This is a public view of the profile. Some information may be hidden for privacy.</p>
+                  <p style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#374151' }}>
+                    {profile.profile_id?.startsWith('local_') ? 'Local Profile' : 'Public Profile'}
+                  </p>
+                  <p>
+                    {profile.profile_id?.startsWith('local_') 
+                      ? 'This profile is created from your local storage data. Connect to the internet and register to save it permanently.' 
+                      : 'This is a public view of the profile. Some information may be hidden for privacy.'
+                    }
+                  </p>
                   <p style={{ marginTop: '0.5rem' }}>Profile ID: {profile.profile_id}</p>
                 </div>
               </div>
