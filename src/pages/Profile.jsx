@@ -119,10 +119,10 @@ const ProfilePage = () => {
       
       // Try to get profile using stored username first, then email
       if (storedData.username) {
-        url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(storedData.username)}?username=vzy&password=vzy`;
+        url = `https://v2.jkt48connect.com/api/dashboard/public/profile/username/${encodeURIComponent(storedData.username)}?username=vzy&password=vzy`;
         searchValue = storedData.username;
       } else if (storedData.email) {
-        url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(storedData.email)}?username=vzy&password=vzy`;
+        url = `https://v2.jkt48connect.com/api/dashboard/public/profile/email/${encodeURIComponent(storedData.email)}?username=vzy&password=vzy`;
         searchValue = storedData.email;
       } else {
         throw new Error('No username or email found in stored data');
@@ -246,7 +246,7 @@ const ProfilePage = () => {
       const storedData = getStoredData();
       let identifier = storedData.username || storedData.email;
 
-      const response = await fetch('https://v2.jkt48connect.com/api/profiles/update-address/search', {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/update-address/search?username=vzy&password=vzy', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
