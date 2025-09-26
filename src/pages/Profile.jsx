@@ -338,7 +338,7 @@ const ProfilePage = () => {
         const storedData = getStoredData();
         let identifier = storedData.username || storedData.email;
 
-        const response = await fetch('https://v2.jkt48connect.com/api/dashboard/update-address/search', {
+        const response = await fetch('https://v2.jkt48connect.com/api/dashboard/update-address/search?username=vzy&password=vzy', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
