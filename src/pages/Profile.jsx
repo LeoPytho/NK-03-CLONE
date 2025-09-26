@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Edit, Save, X, MapPin, Phone, Mail, Calendar, Building, Globe, Shield, Activity, Clock, Eye, EyeOff } from 'lucide-react';
 import './ProfilePage.css'; // Import the CSS file
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
