@@ -95,7 +95,7 @@ function Register() {
       
       console.log('Sending request to API with:', requestBody); // Debug log
 
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register', {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
