@@ -856,34 +856,6 @@ const ProfilePage = () => {
             {/* Profile Stats */}
             <div className="sidebar-cards">
               <div className="profile-card">
-                <h3>Account Status</h3>
-                <div className="status-list">
-                  <div className="status-item">
-                    <span>Member Status</span>
-                    <span className={getMemberStatusText(profile.status_member)}>
-                      {profile.status_member?.toUpperCase() || 'no'}
-                    </span>
-                  </div>
-                  <div className="status-item">
-                    <span>Account Type</span>
-                    <span>{profile.account_type || 'regular'}</span>
-                  </div>
-                  <div className="status-item">
-                    <span>Status</span>
-                    <span className={`badge ${profile.is_active ? 'badge-verified' : 'badge-basic'}`}>
-                      {profile.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  <div className="status-item">
-                    <span>Verified</span>
-                    <span className={`badge ${profile.is_verified ? 'badge-verified' : 'badge-basic'}`}>
-                      {profile.is_verified ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="profile-card">
                 <h3>Profile Information</h3>
                 <div className="status-list">
                   <div className="profile-info-item">
