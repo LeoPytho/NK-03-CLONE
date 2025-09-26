@@ -43,7 +43,7 @@ const ProfilePage = () => {
     }
 
     try {
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/profiles/me', {
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/profiles/me?username=vzy&password=vzy', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,7 +98,7 @@ const ProfilePage = () => {
     setSuccess('');
 
     try {
-      const response = await fetch(`https://v2.jkt48connect.com/api/dashboard/profiles/${profileId}`, {
+      const response = await fetch(`https://v2.jkt48connect.com/api/dashboard/profiles/${profileId}?username=vzy&password=vzy`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -149,7 +149,7 @@ const ProfilePage = () => {
     setSuccess('');
 
     try {
-      const response = await fetch(`https://v2.jkt48connect.com/api/dashboard/profiles/${profileId}/change-password`, {
+      const response = await fetch(`https://v2.jkt48connect.com/api/dashboard/profiles/${profileId}/change-password?username=vzy&password=vzy`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
