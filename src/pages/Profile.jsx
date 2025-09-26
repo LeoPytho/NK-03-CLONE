@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Edit, Save, X, MapPin, Phone, Mail, Calendar, Building, Globe, Shield, Activity, Clock, Eye, EyeOff, Search } from 'lucide-react';
+import { User, Edit, Save, X, MapPin, Phone, Mail, Calendar, Building, Globe, Shield, Activity, Clock, Eye, EyeOff } from 'lucide-react';
 import './ProfilePage.css'; // Import the CSS file
 import { useNavigate } from "react-router-dom";
 
@@ -12,17 +12,20 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
-  const [searchMode, setSearchMode] = useState(false);
-  const [searchCriteria, setSearchCriteria] = useState({
-    searchType: 'username',
-    searchValue: ''
-  });
+  const [editingAddress, setEditingAddress] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [editableData, setEditableData] = useState({});
+  const [addressData, setAddressData] = useState({
+    alamat: '',
+    city: '',
+    province: '',
+    postal_code: '',
+    country: 'Indonesia'
+  });
 
   const navigate = useNavigate();
 
@@ -76,6 +79,7 @@ const ProfilePage = () => {
       nomor_hp: storedData.nomor_hp || '',
       city: storedData.city || '',
       province: storedData.province || '',
+      postal_code: storedData.postal_code || '',
       country: storedData.country || 'Indonesia',
       status_member: 'basic',
       account_type: 'regular',
@@ -91,41 +95,40 @@ const ProfilePage = () => {
 
     setProfile(mockProfile);
     setupEditableData(mockProfile);
-    setSuccess('Displaying profile from local storage data');
+    setupAddressData(mockProfile);
+    setSuccess('Displaying your profile from local storage data');
     setLoading(false);
     console.log('Created mock profile from stored data:', mockProfile);
   };
 
-  // Enhanced fetchProfile with fallback to mock profile
-  const fetchProfile = async (searchType, searchValue) => {
+  // Fetch only current user's profile
+  const fetchProfile = async () => {
     setLoading(true);
     setError('');
 
+    const storedData = getStoredData();
+    if (!storedData) {
+      setError('No profile data found. Please register or login first.');
+      setLoading(false);
+      return;
+    }
+
     try {
       let url = '';
+      let searchValue = '';
       
-      // Construct URL based on search type
-      switch (searchType) {
-        case 'username':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
-          break;
-        case 'email':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
-          break;
-        case 'name':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/name/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
-          break;
-        case 'phone':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/phone/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
-          break;
-        case 'id':
-          url = `https://v2.jkt48connect.com/api/profiles/public/profile/id/${encodeURIComponent(searchValue)}?username=vzy&password=vzy`;
-          break;
-        default:
-          throw new Error('Invalid search type');
+      // Try to get profile using stored username first, then email
+      if (storedData.username) {
+        url = `https://v2.jkt48connect.com/api/profiles/public/profile/username/${encodeURIComponent(storedData.username)}?username=vzy&password=vzy`;
+        searchValue = storedData.username;
+      } else if (storedData.email) {
+        url = `https://v2.jkt48connect.com/api/profiles/public/profile/email/${encodeURIComponent(storedData.email)}?username=vzy&password=vzy`;
+        searchValue = storedData.email;
+      } else {
+        throw new Error('No username or email found in stored data');
       }
 
-      console.log('Fetching profile from:', url);
+      console.log('Fetching your profile from:', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -138,50 +141,21 @@ const ProfilePage = () => {
       console.log('API Response:', data);
 
       if (response.ok && data.status) {
-        // Handle multiple results (for name search)
-        if (Array.isArray(data.data)) {
-          if (data.data.length > 0) {
-            setProfile(data.data[0]); // Use first result
-            setSuccess(`Found ${data.data.length} profile(s). Showing first result.`);
-            setupEditableData(data.data[0]);
-          } else {
-            // No API results, try to create mock profile from stored data
-            const storedData = getStoredData();
-            if (storedData) {
-              createMockProfileFromStoredData(storedData);
-            } else {
-              setError('No profiles found');
-              setProfile(null);
-            }
-          }
-        } else {
-          setProfile(data.data);
-          setSuccess('Profile loaded from server');
-          setupEditableData(data.data);
-        }
+        setProfile(data.data);
+        setupEditableData(data.data);
+        setupAddressData(data.data);
+        setSuccess('Profile loaded from server');
       } else {
-        // API failed, try to create mock profile from stored data
+        // API failed, create mock profile from stored data
         console.log('API failed, creating mock profile from stored data');
-        const storedData = getStoredData();
-        if (storedData) {
-          createMockProfileFromStoredData(storedData);
-        } else {
-          setError(data.message || 'Profile not found or not accessible');
-          setProfile(null);
-        }
+        createMockProfileFromStoredData(storedData);
       }
     } catch (error) {
       console.error('Fetch profile error:', error);
       
-      // Network error or other issues - try to create mock profile from stored data
-      const storedData = getStoredData();
-      if (storedData) {
-        createMockProfileFromStoredData(storedData);
-        setError('Could not connect to server. Showing data from local storage.');
-      } else {
-        setError('Error loading profile: ' + error.message);
-        setProfile(null);
-      }
+      // Network error - create mock profile from stored data
+      createMockProfileFromStoredData(storedData);
+      setError('Could not connect to server. Showing data from local storage.');
     } finally {
       setLoading(false);
     }
@@ -192,9 +166,6 @@ const ProfilePage = () => {
     setEditableData({
       username: profileData.username || '',
       full_name: profileData.full_name || '',
-      city: profileData.city || '',
-      province: profileData.province || '',
-      country: profileData.country || 'Indonesia',
       bio: profileData.bio || '',
       occupation: profileData.occupation || '',
       company: profileData.company || '',
@@ -202,55 +173,35 @@ const ProfilePage = () => {
     });
   };
 
-  // Auto-load profile from localStorage on mount
+  // Setup address data from profile
+  const setupAddressData = (profileData) => {
+    setAddressData({
+      alamat: profileData.alamat || '',
+      city: profileData.city || '',
+      province: profileData.province || '',
+      postal_code: profileData.postal_code || '',
+      country: profileData.country || 'Indonesia'
+    });
+  };
+
+  // Auto-load user's own profile on mount
   useEffect(() => {
-    const storedData = getStoredData();
-    console.log('Stored data found:', storedData);
-
-    if (storedData) {
-      // Try to load profile using stored username first, then email, then name
-      if (storedData.username) {
-        fetchProfile('username', storedData.username);
-      } else if (storedData.email) {
-        fetchProfile('email', storedData.email);
-      } else if (storedData.full_name) {
-        fetchProfile('name', storedData.full_name);
-      } else {
-        // If no useful data found, create a mock profile from stored data
-        createMockProfileFromStoredData(storedData);
-      }
-    } else {
-      // No stored data at all, show empty state
-      setError('No profile data found in localStorage. Please register or login first.');
-      setLoading(false);
-    }
+    fetchProfile();
   }, []);
-
-  // Handle manual search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchCriteria.searchValue.trim()) {
-      setError('Please enter a search value');
-      return;
-    }
-
-    fetchProfile(searchCriteria.searchType, searchCriteria.searchValue.trim());
-    setSearchMode(false);
-  };
-
-  // Handle input changes for search
-  const handleSearchChange = (e) => {
-    const { name, value } = e.target;
-    setSearchCriteria(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
 
   // Handle input changes for editing
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditableData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle address input changes
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setAddressData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -269,6 +220,76 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setError('Profile update is not available in public mode. Please log in to update your profile.');
+  };
+
+  // Update address using the API
+  const handleUpdateAddress = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Get authentication token (in real app, this would come from login)
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      
+      if (!token) {
+        setError('Authentication required. Please log in to update your address.');
+        return;
+      }
+
+      if (!addressData.alamat.trim()) {
+        setError('Address (alamat) is required');
+        return;
+      }
+
+      const storedData = getStoredData();
+      let identifier = storedData.username || storedData.email;
+
+      const response = await fetch('https://v2.jkt48connect.com/api/profiles/update-address/search', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          identifier: identifier,
+          address_data: addressData
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.status) {
+        // Update local profile data
+        setProfile(prev => ({
+          ...prev,
+          alamat: addressData.alamat,
+          city: addressData.city,
+          province: addressData.province,
+          postal_code: addressData.postal_code,
+          country: addressData.country,
+          updated_at: new Date().toISOString()
+        }));
+
+        setSuccess('Address updated successfully!');
+        setEditingAddress(false);
+        
+        // Refresh profile to get latest data
+        setTimeout(() => {
+          fetchProfile();
+        }, 1000);
+        
+      } else {
+        setError(result.message || 'Failed to update address');
+      }
+
+    } catch (error) {
+      console.error('Update address error:', error);
+      setError('Failed to update address. Please check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Change password (Note: This would require authentication in real implementation)
@@ -303,129 +324,12 @@ const ProfilePage = () => {
     }
   };
 
-  // Show search form if no profile loaded or in search mode
-  if (searchMode) {
-    return (
-      <div className="profile-container">
-        <div className="profile-wrapper">
-          <div className="profile-header">
-            <div className="profile-header-content">
-              <h1>Find Profile</h1>
-              <p>Search for a profile using different criteria</p>
-            </div>
-          </div>
-
-          {error && (
-            <div className="alert alert-error">
-              <X style={{ width: '20px', height: '20px' }} />
-              <div className="alert-content">
-                <p className="alert-message">{error}</p>
-              </div>
-              <button onClick={() => setError('')} className="alert-close">
-                <X style={{ width: '16px', height: '16px' }} />
-              </button>
-            </div>
-          )}
-
-          <div className="profile-card">
-            <h2>Search Profile</h2>
-            <form onSubmit={handleSearch} className="profile-form">
-              <div className="form-group">
-                <label className="form-label">Search By</label>
-                <select
-                  name="searchType"
-                  value={searchCriteria.searchType}
-                  onChange={handleSearchChange}
-                  className="form-input form-select"
-                >
-                  <option value="username">Username</option>
-                  <option value="email">Email</option>
-                  <option value="name">Full Name</option>
-                  <option value="phone">Phone Number</option>
-                  <option value="id">Profile ID</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Search Value</label>
-                <input
-                  type="text"
-                  name="searchValue"
-                  value={searchCriteria.searchValue}
-                  onChange={handleSearchChange}
-                  placeholder={`Enter ${searchCriteria.searchType}...`}
-                  className="form-input"
-                  required
-                />
-                <small style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                  {searchCriteria.searchType === 'name' && 'Partial names are supported (e.g., "John" will find "John Doe")'}
-                  {searchCriteria.searchType === 'username' && 'Enter exact username'}
-                  {searchCriteria.searchType === 'email' && 'Enter exact email address'}
-                  {searchCriteria.searchType === 'phone' && 'Enter exact phone number'}
-                  {searchCriteria.searchType === 'id' && 'Enter exact profile ID'}
-                </small>
-              </div>
-
-              <div className="form-actions">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  <Search style={{ width: '16px', height: '16px' }} />
-                  <span>{loading ? 'Searching...' : 'Search Profile'}</span>
-                </button>
-              </div>
-            </form>
-
-            {/* Show stored data if available */}
-            {(() => {
-              const storedData = getStoredData();
-              if (storedData) {
-                return (
-                  <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f3f4f6', borderRadius: '8px' }}>
-                    <h3 style={{ marginBottom: '0.5rem', fontSize: '1rem', color: '#374151' }}>Stored Data Available</h3>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                      {storedData.username && <div>Username: {storedData.username}</div>}
-                      {storedData.email && <div>Email: {storedData.email}</div>}
-                      {storedData.full_name && <div>Name: {storedData.full_name}</div>}
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (storedData.username) {
-                          setSearchCriteria({
-                            searchType: 'username',
-                            searchValue: storedData.username
-                          });
-                        } else if (storedData.email) {
-                          setSearchCriteria({
-                            searchType: 'email',
-                            searchValue: storedData.email
-                          });
-                        }
-                      }}
-                      className="btn btn-outline"
-                      style={{ marginTop: '0.5rem', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
-                    >
-                      Use Stored Data
-                    </button>
-                  </div>
-                );
-              }
-              return null;
-            })()}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="loading-spinner"></div>
-          <p className="loading-text">Loading profile...</p>
+          <p className="loading-text">Loading your profile...</p>
         </div>
       </div>
     );
@@ -437,12 +341,12 @@ const ProfilePage = () => {
         <div className="error-content">
           <div className="error-icon">⚠️</div>
           <h2 className="error-title">Profile Not Found</h2>
-          <p className="error-message">{error || 'Failed to load profile data'}</p>
+          <p className="error-message">{error || 'Failed to load your profile data'}</p>
           <button 
-            onClick={() => setSearchMode(true)} 
+            onClick={() => fetchProfile()} 
             className="btn btn-primary"
           >
-            Search Again
+            Try Again
           </button>
         </div>
       </div>
@@ -475,25 +379,6 @@ const ProfilePage = () => {
                     )}
                   </div>
                 </div>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => setSearchMode(true)}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
-                >
-                  <Search style={{ width: '16px', height: '16px' }} />
-                  <span>Search Other</span>
-                </button>
-                <button
-                  onClick={() => setEditing(!editing)}
-                  className="edit-button"
-                  disabled={true}
-                  title="Profile editing requires login"
-                >
-                  <Edit style={{ width: '16px', height: '16px' }} />
-                  <span>View Only</span>
-                </button>
               </div>
             </div>
           </div>
@@ -569,16 +454,19 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
-                  <div className="profile-info-item full-width">
-                    <MapPin className="profile-info-icon" />
+                  <div className="profile-info-item">
+                    <Mail className="profile-info-icon" />
                     <div className="profile-info-content">
-                      <p>Location</p>
-                      <p>
-                        {profile.city && profile.province 
-                          ? `${profile.city}, ${profile.province}`
-                          : profile.city || profile.province || '-'}
-                        {profile.country && profile.country !== 'Indonesia' && `, ${profile.country}`}
-                      </p>
+                      <p>Email</p>
+                      <p>{profile.email || '-'}</p>
+                    </div>
+                  </div>
+
+                  <div className="profile-info-item">
+                    <Phone className="profile-info-icon" />
+                    <div className="profile-info-content">
+                      <p>Phone Number</p>
+                      <p>{profile.nomor_hp || '-'}</p>
                     </div>
                   </div>
 
@@ -620,10 +508,152 @@ const ProfilePage = () => {
                   </div>
                 )}
               </div>
+
+              {/* Address Section */}
+              <div className="profile-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h2>Address Information</h2>
+                  <button
+                    onClick={() => setEditingAddress(!editingAddress)}
+                    className="btn btn-outline"
+                    style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                  >
+                    <Edit style={{ width: '16px', height: '16px' }} />
+                    <span>{editingAddress ? 'Cancel' : 'Edit Address'}</span>
+                  </button>
+                </div>
+
+                {editingAddress ? (
+                  <form onSubmit={handleUpdateAddress} className="profile-form">
+                    <div className="form-group">
+                      <label className="form-label">Address *</label>
+                      <textarea
+                        name="alamat"
+                        value={addressData.alamat}
+                        onChange={handleAddressChange}
+                        placeholder="Enter your complete address..."
+                        className="form-input"
+                        rows="3"
+                        required
+                      />
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label className="form-label">City</label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={addressData.city}
+                          onChange={handleAddressChange}
+                          placeholder="Enter city"
+                          className="form-input"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">Province</label>
+                        <input
+                          type="text"
+                          name="province"
+                          value={addressData.province}
+                          onChange={handleAddressChange}
+                          placeholder="Enter province"
+                          className="form-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label className="form-label">Postal Code</label>
+                        <input
+                          type="text"
+                          name="postal_code"
+                          value={addressData.postal_code}
+                          onChange={handleAddressChange}
+                          placeholder="Enter postal code"
+                          className="form-input"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">Country</label>
+                        <select
+                          name="country"
+                          value={addressData.country}
+                          onChange={handleAddressChange}
+                          className="form-input form-select"
+                        >
+                          <option value="Indonesia">Indonesia</option>
+                          <option value="Malaysia">Malaysia</option>
+                          <option value="Singapore">Singapore</option>
+                          <option value="Thailand">Thailand</option>
+                          <option value="Philippines">Philippines</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-actions">
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        disabled={saving}
+                      >
+                        <Save style={{ width: '16px', height: '16px' }} />
+                        <span>{saving ? 'Updating...' : 'Update Address'}</span>
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="profile-info-grid">
+                    <div className="profile-info-item full-width">
+                      <MapPin className="profile-info-icon" />
+                      <div className="profile-info-content">
+                        <p>Complete Address</p>
+                        <p>{profile.alamat || 'No address provided'}</p>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <MapPin className="profile-info-icon" />
+                      <div className="profile-info-content">
+                        <p>City</p>
+                        <p>{profile.city || '-'}</p>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <MapPin className="profile-info-icon" />
+                      <div className="profile-info-content">
+                        <p>Province</p>
+                        <p>{profile.province || '-'}</p>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <MapPin className="profile-info-icon" />
+                      <div className="profile-info-content">
+                        <p>Postal Code</p>
+                        <p>{profile.postal_code || '-'}</p>
+                      </div>
+                    </div>
+
+                    <div className="profile-info-item">
+                      <Globe className="profile-info-icon" />
+                      <div className="profile-info-content">
+                        <p>Country</p>
+                        <p>{profile.country || 'Indonesia'}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Profile Stats */}
-                          <div className="sidebar-cards">
+            <div className="sidebar-cards">
               <div className="profile-card">
                 <h3>Account Status</h3>
                 <div className="status-list">
@@ -675,12 +705,12 @@ const ProfilePage = () => {
               <div className="profile-card">
                 <div style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', fontSize: '0.875rem', color: '#6b7280' }}>
                   <p style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#374151' }}>
-                    {profile.profile_id?.startsWith('local_') ? 'Local Profile' : 'Public Profile'}
+                    {profile.profile_id?.startsWith('local_') ? 'Local Profile' : 'Your Profile'}
                   </p>
                   <p>
                     {profile.profile_id?.startsWith('local_') 
-                      ? 'This profile is created from your local storage data. Connect to the internet and register to save it permanently.' 
-                      : 'This is a public view of the profile. Some information may be hidden for privacy.'
+                      ? 'This profile is created from your local storage data. Register or login to save it permanently.' 
+                      : 'This is your personal profile. You can edit your address information.'
                     }
                   </p>
                   <p style={{ marginTop: '0.5rem' }}>Profile ID: {profile.profile_id}</p>
@@ -756,12 +786,19 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
-            <div style={{ marginTop: '2rem', padding: '1rem', background: '#fef3c7', borderRadius: '8px', fontSize: '0.875rem' }}>
-              <p style={{ marginBottom: '0.5rem', fontWeight: '600', color: '#92400e' }}>Limited Information</p>
-              <p style={{ color: '#b45309' }}>This is a public view. Detailed activity logs require authentication.</p>
+                {profile.alamat && (
+                  <div className="activity-item">
+                    <div className="activity-icon-container blue">
+                      <MapPin className="activity-icon" />
+                    </div>
+                    <div className="activity-content">
+                      <p>Address information added</p>
+                      <p>Profile includes address details</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
