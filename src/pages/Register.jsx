@@ -5,8 +5,12 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    full_name: '',
+    alamat: '',
+    nomor_hp: ''
   });
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
@@ -56,6 +60,40 @@ function Register() {
       return false;
     }
 
+    if (!formData.email.trim()) {
+      showToast('Email harus diisi', 'error');
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showToast('Format email tidak valid', 'error');
+      return false;
+    }
+
+    if (!formData.full_name.trim()) {
+      showToast('Nama lengkap harus diisi', 'error');
+      return false;
+    }
+
+    if (!formData.alamat.trim()) {
+      showToast('Alamat harus diisi', 'error');
+      return false;
+    }
+
+    if (!formData.nomor_hp.trim()) {
+      showToast('Nomor HP harus diisi', 'error');
+      return false;
+    }
+
+    // Basic phone number validation (Indonesian format)
+    const phoneRegex = /^(\+62|62|0)[0-9]{9,13}$/;
+    if (!phoneRegex.test(formData.nomor_hp.replace(/\s|-/g, ''))) {
+      showToast('Format nomor HP tidak valid', 'error');
+      return false;
+    }
+
     if (!formData.password) {
       showToast('Password harus diisi', 'error');
       return false;
@@ -90,7 +128,11 @@ function Register() {
     try {
       const requestBody = {
         username: formData.username.trim(),
-        password: formData.password
+        email: formData.email.trim(),
+        password: formData.password,
+        full_name: formData.full_name.trim(),
+        alamat: formData.alamat.trim(),
+        nomor_hp: formData.nomor_hp.trim().replace(/\s|-/g, '') // Remove spaces and dashes
       };
       
       console.log('Sending request to API with:', requestBody); // Debug log
@@ -167,8 +209,12 @@ function Register() {
   const handleReset = () => {
     setFormData({
       username: '',
+      email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      full_name: '',
+      alamat: '',
+      nomor_hp: ''
     });
     console.log('Form reset'); // Debug log
   };
@@ -228,6 +274,69 @@ function Register() {
             </div>
 
             <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Masukkan email"
+                className="form-input"
+                disabled={loading}
+                autoComplete="email"
+              />
+              <small className="form-hint">Format: nama@domain.com</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="full_name">Nama Lengkap</label>
+              <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                value={formData.full_name}
+                onChange={handleInputChange}
+                placeholder="Masukkan nama lengkap"
+                className="form-input"
+                disabled={loading}
+                autoComplete="name"
+              />
+              <small className="form-hint">Nama lengkap sesuai identitas</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="alamat">Alamat</label>
+              <textarea
+                id="alamat"
+                name="alamat"
+                value={formData.alamat}
+                onChange={handleInputChange}
+                placeholder="Masukkan alamat lengkap"
+                className="form-input form-textarea"
+                disabled={loading}
+                rows={3}
+              />
+              <small className="form-hint">Alamat lengkap tempat tinggal</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="nomor_hp">Nomor HP</label>
+              <input
+                type="tel"
+                id="nomor_hp"
+                name="nomor_hp"
+                value={formData.nomor_hp}
+                onChange={handleInputChange}
+                placeholder="08xxxxxxxxxx"
+                className="form-input"
+                disabled={loading}
+                autoComplete="tel"
+              />
+              <small className="form-hint">Format: 08xxxxxxxxxx atau +62xxxxxxxxxx</small>
+            </div>
+
+            <div className="form-group">
               <label htmlFor="password">Password</label>
               <input
                 type="password"
@@ -282,6 +391,10 @@ function Register() {
             <div style={{ marginTop: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '4px', fontSize: '12px' }}>
               <strong>Debug Info:</strong>
               <div>Username: "{formData.username}" (length: {formData.username.length})</div>
+              <div>Email: "{formData.email}" (length: {formData.email.length})</div>
+              <div>Full Name: "{formData.full_name}" (length: {formData.full_name.length})</div>
+              <div>Alamat: "{formData.alamat}" (length: {formData.alamat.length})</div>
+              <div>Nomor HP: "{formData.nomor_hp}" (length: {formData.nomor_hp.length})</div>
               <div>Password: {"*".repeat(formData.password.length)} (length: {formData.password.length})</div>
               <div>Confirm Password: {"*".repeat(formData.confirmPassword.length)} (length: {formData.confirmPassword.length})</div>
               <div>Loading: {loading ? 'Yes' : 'No'}</div>
@@ -293,7 +406,11 @@ function Register() {
               <h3>Informasi Registrasi</h3>
               <ul className="info-list">
                 <li>Username harus unik dan minimal 3 karakter</li>
-                <li>Password harus minimal 6 karakter</li>
+                <li>Email harus valid dan dapat diakses</li>
+                <li>Nama lengkap sesuai identitas resmi</li>
+                <li>Alamat harus lengkap dan jelas</li>
+                <li>Nomor HP aktif untuk verifikasi</li>
+                <li>Password minimal 6 karakter</li>
                 <li>Pastikan konfirmasi password sesuai</li>
                 <li>Data akan disimpan dengan aman</li>
               </ul>
@@ -408,6 +525,12 @@ function Register() {
         .form-input:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+
+        .form-textarea {
+          resize: vertical;
+          min-height: 80px;
+          font-family: inherit;
         }
 
         .form-hint {
