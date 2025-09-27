@@ -590,20 +590,6 @@ function Register() {
                 Reset Form
               </button>
             </div>
-
-            {/* Debug info - remove in production */}
-            <div style={{ marginTop: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '4px', fontSize: '12px' }}>
-              <strong>Debug Info:</strong>
-              <div>Username: "{formData.username}" (length: {formData.username.length})</div>
-              <div>Email: "{formData.email}" (length: {formData.email.length})</div>
-              <div>Full Name: "{formData.full_name}" (length: {formData.full_name.length})</div>
-              <div>Alamat: "{formData.alamat}" (length: {formData.alamat.length})</div>
-              <div>Nomor HP: "{formData.nomor_hp}" (length: {formData.nomor_hp.length})</div>
-              <div>Password: {"*".repeat(formData.password.length)} (length: {formData.password.length})</div>
-              <div>Confirm Password: {"*".repeat(formData.confirmPassword.length)} (length: {formData.confirmPassword.length})</div>
-              <div>Loading: {loading ? 'Yes' : 'No'}</div>
-              <div>Has Saved Data: {hasSavedData() ? 'Yes' : 'No'}</div>
-            </div>
           </form>
 
           <div className="register-info">
