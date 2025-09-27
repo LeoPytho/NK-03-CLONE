@@ -197,6 +197,11 @@ header {
   position: relative;
   z-index: 10003;
   white-space: nowrap;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
 .dropdown-item:hover {
@@ -261,6 +266,239 @@ header {
   justify-content: center;
   font-weight: bold;
   border: 2px solid white;
+}
+
+/* ===== NEW AUTHENTICATION STYLES ===== */
+
+/* Desktop Auth Buttons */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.auth-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.auth-btn.login-btn {
+  background: transparent;
+  color: #7b1c1c;
+  border: 2px solid #7b1c1c;
+}
+
+.auth-btn.login-btn:hover {
+  background: #7b1c1c;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(123, 28, 28, 0.3);
+}
+
+.auth-btn.register-btn {
+  background: #7b1c1c;
+  color: white;
+  border: 2px solid #7b1c1c;
+}
+
+.auth-btn.register-btn:hover {
+  background: #6a1818;
+  border-color: #6a1818;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(106, 24, 24, 0.3);
+}
+
+/* Logged in user styles */
+.user-btn.logged-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.user-btn.logged-in:hover {
+  background: #e9ecef;
+  border-color: #7b1c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(123, 28, 28, 0.2);
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-user-info {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  margin: 0;
+}
+
+.dropdown-user-info strong {
+  display: block;
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.dropdown-user-info small {
+  display: block;
+  color: #666;
+  font-size: 12px;
+}
+
+.logout-btn {
+  color: #dc3545 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: #f8f9fa !important;
+  color: #c82333 !important;
+}
+
+/* Mobile Auth Styles */
+.mobile-user-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 1px solid #e1e5e9;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-icon {
+  font-size: 24px;
+  color: #7b1c1c;
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-details .username {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-details .email {
+  display: block;
+  color: #666;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.mobile-logout-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.mobile-auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.mobile-auth-btn {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.mobile-auth-btn.login {
+  background: transparent;
+  color: #7b1c1c;
+  border: 2px solid #7b1c1c;
+}
+
+.mobile-auth-btn.login:hover {
+  background: #7b1c1c;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(123, 28, 28, 0.3);
+}
+
+.mobile-auth-btn.register {
+  background: #7b1c1c;
+  color: white;
+  border: 2px solid #7b1c1c;
+}
+
+.mobile-auth-btn.register:hover {
+  background: #6a1818;
+  border-color: #6a1818;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(106, 24, 24, 0.3);
 }
 
 /* Mobile/Desktop visibility classes */
@@ -426,6 +664,15 @@ header {
   .nav-icons {
     gap: 15px;
   }
+  
+  .auth-buttons {
+    gap: 8px;
+  }
+  
+  .auth-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -462,6 +709,12 @@ header {
   .mobile-only {
     display: block;
   }
+
+  /* Ensure mobile auth elements are visible */
+  .mobile-user-section,
+  .mobile-auth-buttons {
+    display: flex !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -477,5 +730,35 @@ header {
   .mobile-menu {
     padding: 15px;
     width: 100%;
+  }
+
+  .mobile-auth-btn {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+
+  .mobile-user-section {
+    padding: 12px;
+  }
+
+  .user-details .username {
+    font-size: 15px;
+  }
+
+  .mobile-logout-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+/* Additional responsive fixes for desktop auth buttons */
+@media (min-width: 769px) {
+  .mobile-user-section,
+  .mobile-auth-buttons {
+    display: none !important;
+  }
+  
+  .auth-buttons {
+    display: flex !important;
   }
 }
