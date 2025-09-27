@@ -21,12 +21,170 @@ function PurchaseForm() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchingAddress, setSearchingAddress] = useState(false);
+  const [autoFillApplied, setAutoFillApplied] = useState(false);
   
   // State untuk redeem code
   const [redeemCodeError, setRedeemCodeError] = useState("");
   const [redeemCodeSuccess, setRedeemCodeSuccess] = useState("");
   const [validatingCode, setValidatingCode] = useState(false);
   const [redeemData, setRedeemData] = useState(null); // Untuk menyimpan data redeem yang valid
+
+  // Function untuk mendapatkan data dari berbagai sumber localStorage/sessionStorage
+  const getStoredUserData = () => {
+    try {
+      // 1. Cek data registrasi yang berhasil di localStorage
+      const successfulReg = localStorage.getItem('successfulRegistration');
+      if (successfulReg) {
+        const regData = JSON.parse(successfulReg);
+        console.log('Found successful registration data:', regData);
+        return {
+          email: regData.email,
+          nama: regData.full_name || regData.username,
+          nomor_hp: regData.nomor_hp || '',
+          source: 'successful_registration'
+        };
+      }
+
+      // 2. Cek data form registrasi yang tersimpan di localStorage
+      const registerFormData = localStorage.getItem('registerFormData');
+      if (registerFormData) {
+        const formData = JSON.parse(registerFormData);
+        console.log('Found register form data:', formData);
+        return {
+          email: formData.email,
+          nama: formData.full_name || formData.username,
+          nomor_hp: formData.nomor_hp || '',
+          source: 'register_form'
+        };
+      }
+
+      // 3. Cek data login di sessionStorage
+      const loginData = sessionStorage.getItem('userLogin');
+      if (loginData) {
+        const login = JSON.parse(loginData);
+        console.log('Found login data:', login);
+        if (login.isLoggedIn && login.user) {
+          return {
+            email: login.user.email,
+            nama: login.user.full_name || login.user.username,
+            nomor_hp: login.user.nomor_hp || '',
+            source: 'login_session'
+          };
+        }
+      }
+
+      // 4. Cek data registrasi di sessionStorage
+      const regData = sessionStorage.getItem('userRegistration');
+      if (regData) {
+        const registration = JSON.parse(regData);
+        console.log('Found registration session data:', registration);
+        if (registration.isRegistered) {
+          return {
+            email: registration.userData?.email || '',
+            nama: registration.userData?.full_name || registration.username,
+            nomor_hp: registration.userData?.nomor_hp || '',
+            source: 'registration_session'
+          };
+        }
+      }
+
+      // 5. Cek data user yang tersimpan dari form sebelumnya
+      const userData = sessionStorage.getItem('userData');
+      if (userData) {
+        const user = JSON.parse(userData);
+        console.log('Found user session data:', user);
+        return {
+          email: user.email,
+          nama: user.nama,
+          nomor_hp: user.nomor_hp,
+          alamat: user.alamat,
+          source: 'user_session'
+        };
+      }
+
+      console.log('No stored user data found');
+      return null;
+    } catch (error) {
+      console.error('Error getting stored user data:', error);
+      return null;
+    }
+  };
+
+  // Function untuk mendapatkan data alamat dari localStorage
+  const getStoredAddressData = () => {
+    try {
+      const userAddress = localStorage.getItem('userAddress');
+      if (userAddress) {
+        const addressData = JSON.parse(userAddress);
+        console.log('Found stored address data:', addressData);
+        return {
+          alamat: addressData.alamat || '',
+          source: 'user_address'
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting stored address data:', error);
+      return null;
+    }
+  };
+
+  // Function untuk auto-fill form dari data yang tersimpan
+  const autoFillFormFromStorage = () => {
+    if (autoFillApplied) return; // Hindari auto-fill berulang
+
+    const userData = getStoredUserData();
+    const addressData = getStoredAddressData();
+
+    if (userData || addressData) {
+      const updatedForm = { ...form };
+      let hasChanges = false;
+
+      // Fill user data
+      if (userData) {
+        if (userData.email && !updatedForm.email) {
+          updatedForm.email = userData.email;
+          hasChanges = true;
+        }
+        if (userData.nama && !updatedForm.nama) {
+          updatedForm.nama = userData.nama;
+          hasChanges = true;
+        }
+        if (userData.nomor_hp && !updatedForm.nomor_hp) {
+          updatedForm.nomor_hp = userData.nomor_hp;
+          hasChanges = true;
+        }
+        if (userData.alamat && !updatedForm.alamat) {
+          updatedForm.alamat = userData.alamat;
+          hasChanges = true;
+        }
+      }
+
+      // Fill address data (prioritas dari localStorage userAddress)
+      if (addressData && addressData.alamat && !updatedForm.alamat) {
+        updatedForm.alamat = addressData.alamat;
+        hasChanges = true;
+      }
+
+      if (hasChanges) {
+        setForm(updatedForm);
+        setAutoFillApplied(true);
+        
+        // Show success message
+        const sources = [];
+        if (userData) sources.push(userData.source);
+        if (addressData) sources.push(addressData.source);
+        
+        console.log(`Auto-filled form from: ${sources.join(', ')}`);
+        
+        // Set a temporary success message (optional)
+        setTimeout(() => {
+          // You could show a toast or notification here
+          console.log('Form auto-filled successfully');
+        }, 500);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -50,6 +208,16 @@ function PurchaseForm() {
 
     fetchProduct();
   }, [id]);
+
+  // Auto-fill form ketika component mount
+  useEffect(() => {
+    // Delay sedikit untuk memastikan state form sudah ter-initialize
+    const timer = setTimeout(() => {
+      autoFillFormFromStorage();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array, hanya jalankan sekali saat mount
 
   // Function untuk menyimpan data pengguna ke sessionStorage
   const saveUserDataToSession = (userData) => {
@@ -296,6 +464,14 @@ function PurchaseForm() {
     }, 200);
   };
 
+  // Function untuk manual refresh auto-fill (opsional)
+  const refreshAutoFill = () => {
+    setAutoFillApplied(false);
+    setTimeout(() => {
+      autoFillFormFromStorage();
+    }, 100);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -389,7 +565,38 @@ function PurchaseForm() {
 
   return (
     <div className="purchase-form">
-      <h2 className="form-title">Form Penginputan Pembelian</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 className="form-title">Form Penginputan Pembelian</h2>
+        {/* Auto-fill indicator/refresh button (opsional) */}
+        {autoFillApplied && (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px',
+            padding: '5px 10px',
+            backgroundColor: '#e8f5e8',
+            borderRadius: '4px',
+            fontSize: '12px',
+            color: '#2d5a2d'
+          }}>
+            <span>✓ Form auto-filled from saved data</span>
+            <button 
+              type="button"
+              onClick={refreshAutoFill}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#2d5a2d',
+                cursor: 'pointer',
+                fontSize: '12px',
+                textDecoration: 'underline'
+              }}
+            >
+              Refresh
+            </button>
+          </div>
+        )}
+      </div>
 
       {loading ? (
         <div className="skeleton-form">
