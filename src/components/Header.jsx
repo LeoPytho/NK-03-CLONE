@@ -359,7 +359,7 @@ const Header = () => {
                   {userInfo?.email && <small>{userInfo.email}</small>}
                 </div>
                 <div className="dropdown-divider"></div>
-                <a href="#" className="dropdown-item">Profile Saya</a>
+                <a href="/profile" className="dropdown-item">Profile Saya</a>
                 <a href="/myorder" className="dropdown-item">Pesanan Saya</a>
                 <a href="/wish" className="dropdown-item">Wishlist</a>
                 <div className="dropdown-divider"></div>
@@ -397,6 +397,7 @@ const Header = () => {
             <a href="#" className="mobile-nav-link">FAQ</a>
             <a href="/myorder" className="mobile-nav-link">Pesanan Saya</a>
             <a href="/wish" className="mobile-nav-link">Wishlist</a>
+            <a href="/profile" className="mobile-nav-link">Profile Saya</a>
           </div>
           
           <div className="mobile-icons">
