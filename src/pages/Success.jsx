@@ -13,7 +13,7 @@ function Success() {
   }, []);
 
   const handleViewOrder = () => {
-    navigate("/order");
+    navigate("/myorder");
   };
 
   const handleClose = () => {
