@@ -22,7 +22,6 @@ function Register() {
         const savedFormData = localStorage.getItem('registerFormData');
         if (savedFormData) {
           const parsedData = JSON.parse(savedFormData);
-          console.log('Loading saved form data:', parsedData);
           setFormData(prev => ({
             ...prev,
             ...parsedData,
@@ -86,7 +85,6 @@ function Register() {
         
         if (hasData) {
           localStorage.setItem('registerFormData', JSON.stringify(dataToSave));
-          console.log('Form data saved to localStorage:', dataToSave);
         }
       } catch (error) {
         console.error('Error saving form data to localStorage:', error);
@@ -114,8 +112,6 @@ function Register() {
   };
 
   const validateForm = () => {
-    console.log('Validating form with data:', formData); // Debug log
-    
     if (!formData.username.trim()) {
       showToast('Username harus diisi', 'error');
       return false;
@@ -181,15 +177,11 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    console.log('Form submitted with data:', formData); // Debug log
-    
     if (!validateForm()) {
-      console.log('Form validation failed'); // Debug log
       return;
     }
 
     setLoading(true);
-    console.log('Starting registration process...'); // Debug log
 
     try {
       const requestBody = {
@@ -200,8 +192,6 @@ function Register() {
         alamat: formData.alamat.trim(),
         nomor_hp: formData.nomor_hp.trim().replace(/\s|-/g, '') // Remove spaces and dashes
       };
-      
-      console.log('Sending request to API with:', requestBody); // Debug log
 
       const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
         method: 'POST',
@@ -212,9 +202,6 @@ function Register() {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status); // Debug log
-      console.log('Response headers:', response.headers); // Debug log
-
       // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -222,7 +209,6 @@ function Register() {
       }
 
       const data = await response.json();
-      console.log('Response data:', data); // Debug log
 
       if (response.ok) {
         // Check for different success indicators
@@ -296,7 +282,6 @@ function Register() {
     
     // Clear saved form data from localStorage
     localStorage.removeItem('registerFormData');
-    console.log('Form reset and localStorage cleared'); // Debug log
     
     showToast('Form telah direset', 'success');
   };
@@ -306,13 +291,7 @@ function Register() {
     localStorage.removeItem('registerFormData');
     localStorage.removeItem('successfulRegistration');
     showToast('Data tersimpan telah dihapus', 'success');
-    console.log('All saved registration data cleared from localStorage');
   };
-
-  // Debug: Log form data changes
-  useEffect(() => {
-    console.log('Form data changed:', formData);
-  }, [formData]);
 
   // Check if there's saved data
   const hasSavedData = () => {
