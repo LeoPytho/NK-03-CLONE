@@ -251,72 +251,6 @@ function Register() {
     // If no specific field error was found, show general error
     return false;
   };
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const requestBody = {
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-        full_name: formData.full_name.trim(),
-        alamat: formData.alamat.trim(),
-        nomor_hp: formData.nomor_hp.trim().replace(/\s|-/g, '') // Remove spaces and dashes
-      };
-
-      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Server response is not JSON');
-      }
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Check for different success indicators
-        if (data.status === true || data.success === true || response.status === 200 || response.status === 201) {
-          // Registration successful
-          const registrationData = {
-            isRegistered: true,
-            username: formData.username.trim(),
-            registeredAt: new Date().toISOString(),
-            userData: data.data || data.user || {}
-          };
-
-          // Store registration data in sessionStorage
-          sessionStorage.setItem('userRegistration', JSON.stringify(registrationData));
-          
-          // Store successful registration data in localStorage for future reference
-          const successfulRegistrationData = {
-            username: formData.username.trim(),
-            email: formData.email.trim(),
-            full_name: formData.full_name.trim(),
-            registeredAt: new Date().toISOString(),
-            isSuccessfullyRegistered: true
-          };
-          localStorage.setItem('successfulRegistration', JSON.stringify(successfulRegistrationData));
-          
-          // Clear the form data from localStorage since registration is complete
-          localStorage.removeItem('registerFormData');
-          
-          showToast('Registrasi berhasil! Mengalihkan ke halaman utama...', 'success');
-          
-          // Redirect to home page immediately (no delay needed as login page will handle it)
-          navigate('/');
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -428,7 +362,6 @@ function Register() {
     } finally {
       setLoading(false);
     }
-  };
   };
 
   const handleReset = () => {
@@ -687,8 +620,6 @@ function Register() {
                 <li>Data akan disimpan dengan aman</li>
               </ul>
             </div>
-
-            
           </div>
         </div>
       </div>
