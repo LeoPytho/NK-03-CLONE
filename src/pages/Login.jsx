@@ -26,7 +26,6 @@ function Login() {
         // Check if user just registered (auto redirect after registration)
         const registrationData = JSON.parse(sessionStorage.getItem('userRegistration') || 'null');
         if (registrationData && registrationData.isRegistered) {
-          console.log('User just registered, redirecting to home...');
           // Clear registration data after redirect
           sessionStorage.removeItem('userRegistration');
           navigate('/');
@@ -64,8 +63,6 @@ function Login() {
   };
 
   const validateForm = () => {
-    console.log('Validating form with data:', formData); // Debug log
-    
     if (!formData.identifier.trim()) {
       const fieldName = loginMethod === 'email' ? 'Email' : 'Username';
       showToast(`${fieldName} harus diisi`, 'error');
@@ -96,15 +93,11 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    console.log('Form submitted with data:', formData); // Debug log
-    
     if (!validateForm()) {
-      console.log('Form validation failed'); // Debug log
       return;
     }
 
     setLoading(true);
-    console.log('Starting login process...'); // Debug log
 
     try {
       // Prepare request body based on login method
@@ -117,8 +110,6 @@ function Login() {
       } else {
         requestBody.username = formData.identifier.trim();
       }
-      
-      console.log('Sending request to API with:', requestBody); // Debug log
 
       const response = await fetch('https://v2.jkt48connect.com/api/dashboard/login?username=vzy&password=vzy', {
         method: 'POST',
@@ -129,8 +120,6 @@ function Login() {
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status); // Debug log
-
       // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -138,7 +127,6 @@ function Login() {
       }
 
       const data = await response.json();
-      console.log('Response data:', data); // Debug log
 
       if (response.ok && data.status === true) {
         // Login successful
@@ -190,13 +178,7 @@ function Login() {
       identifier: '',
       password: ''
     });
-    console.log('Form reset'); // Debug log
   };
-
-  // Debug: Log form data changes
-  useEffect(() => {
-    console.log('Form data changed:', formData);
-  }, [formData]);
 
   if (loading) {
     return (
