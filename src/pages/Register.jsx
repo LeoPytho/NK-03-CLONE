@@ -12,6 +12,7 @@ function Register() {
     alamat: '',
     nomor_hp: ''
   });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
@@ -31,7 +32,6 @@ function Register() {
           }));
         }
       } catch (error) {
-        console.error('Error loading saved form data:', error);
         // Clear corrupted data
         localStorage.removeItem('registerFormData');
       }
@@ -59,7 +59,7 @@ function Register() {
           navigate('/');
         }
       } catch (error) {
-        console.error('Error checking registration/login status:', error);
+        // Handle silently, just don't redirect
       }
     };
 
@@ -87,7 +87,7 @@ function Register() {
           localStorage.setItem('registerFormData', JSON.stringify(dataToSave));
         }
       } catch (error) {
-        console.error('Error saving form data to localStorage:', error);
+        // Handle silently, form auto-save is not critical
       }
     };
 
@@ -109,72 +109,148 @@ function Register() {
       ...prev,
       [name]: value
     }));
+    
+    // Clear field-specific error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const clearAllFieldErrors = () => {
+    setFieldErrors({});
+  };
+
+  const setFieldError = (fieldName, errorMessage) => {
+    setFieldErrors(prev => ({
+      ...prev,
+      [fieldName]: errorMessage
+    }));
   };
 
   const validateForm = () => {
-    if (!formData.username.trim()) {
-      showToast('Username harus diisi', 'error');
-      return false;
-    }
+    clearAllFieldErrors();
+    let isValid = true;
 
-    if (formData.username.length < 3) {
-      showToast('Username minimal 3 karakter', 'error');
-      return false;
+    if (!formData.username.trim()) {
+      setFieldError('username', 'Username harus diisi');
+      isValid = false;
+    } else if (formData.username.length < 3) {
+      setFieldError('username', 'Username minimal 3 karakter');
+      isValid = false;
     }
 
     if (!formData.email.trim()) {
-      showToast('Email harus diisi', 'error');
-      return false;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      showToast('Format email tidak valid', 'error');
-      return false;
+      setFieldError('email', 'Email harus diisi');
+      isValid = false;
+    } else {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setFieldError('email', 'Format email tidak valid');
+        isValid = false;
+      }
     }
 
     if (!formData.full_name.trim()) {
-      showToast('Nama lengkap harus diisi', 'error');
-      return false;
+      setFieldError('full_name', 'Nama lengkap harus diisi');
+      isValid = false;
     }
 
     if (!formData.alamat.trim()) {
-      showToast('Alamat harus diisi', 'error');
-      return false;
+      setFieldError('alamat', 'Alamat harus diisi');
+      isValid = false;
     }
 
     if (!formData.nomor_hp.trim()) {
-      showToast('Nomor HP harus diisi', 'error');
-      return false;
-    }
-
-    // Basic phone number validation (Indonesian format)
-    const phoneRegex = /^(\+62|62|0)[0-9]{9,13}$/;
-    if (!phoneRegex.test(formData.nomor_hp.replace(/\s|-/g, ''))) {
-      showToast('Format nomor HP tidak valid', 'error');
-      return false;
+      setFieldError('nomor_hp', 'Nomor HP harus diisi');
+      isValid = false;
+    } else {
+      // Basic phone number validation (Indonesian format)
+      const phoneRegex = /^(\+62|62|0)[0-9]{9,13}$/;
+      if (!phoneRegex.test(formData.nomor_hp.replace(/\s|-/g, ''))) {
+        setFieldError('nomor_hp', 'Format nomor HP tidak valid');
+        isValid = false;
+      }
     }
 
     if (!formData.password) {
-      showToast('Password harus diisi', 'error');
-      return false;
+      setFieldError('password', 'Password harus diisi');
+      isValid = false;
+    } else if (formData.password.length < 6) {
+      setFieldError('password', 'Password minimal 6 karakter');
+      isValid = false;
     }
 
-    if (formData.password.length < 6) {
-      showToast('Password minimal 6 karakter', 'error');
-      return false;
+    if (!formData.confirmPassword) {
+      setFieldError('confirmPassword', 'Konfirmasi password harus diisi');
+      isValid = false;
+    } else if (formData.password !== formData.confirmPassword) {
+      setFieldError('confirmPassword', 'Konfirmasi password tidak cocok');
+      isValid = false;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      showToast('Konfirmasi password tidak cocok', 'error');
-      return false;
+    if (!isValid) {
+      showToast('Periksa kembali form yang telah diisi', 'error');
     }
 
-    return true;
+    return isValid;
   };
 
-  const handleRegister = async (e) => {
+  const parseServerError = (data, response) => {
+    const errorMessage = data.message || data.error || '';
+    
+    // Handle specific field errors based on server response
+    if (errorMessage.toLowerCase().includes('phone number already exists') || 
+        errorMessage.toLowerCase().includes('nomor hp sudah digunakan') ||
+        errorMessage.toLowerCase().includes('nomor sudah ada')) {
+      setFieldError('nomor_hp', 'Nomor HP sudah ada yang menggunakan');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('username already exists') ||
+        errorMessage.toLowerCase().includes('username sudah digunakan') ||
+        errorMessage.toLowerCase().includes('username sudah ada')) {
+      setFieldError('username', 'Username sudah ada yang menggunakan');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('email already exists') ||
+        errorMessage.toLowerCase().includes('email sudah digunakan') ||
+        errorMessage.toLowerCase().includes('email sudah ada')) {
+      setFieldError('email', 'Email sudah ada yang menggunakan');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('invalid email') ||
+        errorMessage.toLowerCase().includes('email tidak valid')) {
+      setFieldError('email', 'Format email tidak valid');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('invalid phone') ||
+        errorMessage.toLowerCase().includes('nomor hp tidak valid')) {
+      setFieldError('nomor_hp', 'Format nomor HP tidak valid');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('username too short') ||
+        errorMessage.toLowerCase().includes('username terlalu pendek')) {
+      setFieldError('username', 'Username terlalu pendek');
+      return true;
+    }
+    
+    if (errorMessage.toLowerCase().includes('password too short') ||
+        errorMessage.toLowerCase().includes('password terlalu pendek')) {
+      setFieldError('password', 'Password terlalu pendek');
+      return true;
+    }
+    
+    // If no specific field error was found, show general error
+    return false;
+  };
     e.preventDefault();
     
     if (!validateForm()) {
@@ -242,31 +318,117 @@ function Register() {
           // Redirect to home page immediately (no delay needed as login page will handle it)
           navigate('/');
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    clearAllFieldErrors();
+
+    try {
+      const requestBody = {
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        full_name: formData.full_name.trim(),
+        alamat: formData.alamat.trim(),
+        nomor_hp: formData.nomor_hp.trim().replace(/\s|-/g, '') // Remove spaces and dashes
+      };
+
+      const response = await fetch('https://v2.jkt48connect.com/api/dashboard/register?username=vzy&password=vzy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        showToast('Server memberikan respons yang tidak valid', 'error');
+        return;
+      }
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check for different success indicators
+        if (data.status === true || data.success === true || response.status === 200 || response.status === 201) {
+          // Registration successful
+          const registrationData = {
+            isRegistered: true,
+            username: formData.username.trim(),
+            registeredAt: new Date().toISOString(),
+            userData: data.data || data.user || {}
+          };
+
+          // Store registration data in sessionStorage
+          sessionStorage.setItem('userRegistration', JSON.stringify(registrationData));
+          
+          // Store successful registration data in localStorage for future reference
+          const successfulRegistrationData = {
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            full_name: formData.full_name.trim(),
+            registeredAt: new Date().toISOString(),
+            isSuccessfullyRegistered: true
+          };
+          localStorage.setItem('successfulRegistration', JSON.stringify(successfulRegistrationData));
+          
+          // Clear the form data from localStorage since registration is complete
+          localStorage.removeItem('registerFormData');
+          
+          showToast('Registrasi berhasil! Mengalihkan ke halaman utama...', 'success');
+          
+          // Redirect to home page immediately (no delay needed as login page will handle it)
+          navigate('/');
+
         } else {
-          // Registration failed
-          const errorMessage = data.message || data.error || 'Registrasi gagal. Silakan coba lagi.';
-          showToast(errorMessage, 'error');
+          // Registration failed - try to parse specific field errors
+          const hasSpecificError = parseServerError(data, response);
+          
+          if (!hasSpecificError) {
+            // Show general error message if no specific field error was handled
+            const errorMessage = data.message || data.error || 'Registrasi gagal. Silakan coba lagi.';
+            showToast(errorMessage, 'error');
+          }
         }
       } else {
-        // HTTP error status
-        const errorMessage = data.message || data.error || `HTTP Error: ${response.status}`;
-        showToast(errorMessage, 'error');
-        console.error('HTTP Error:', response.status, errorMessage);
+        // HTTP error status - try to parse specific field errors first
+        const hasSpecificError = parseServerError(data, response);
+        
+        if (!hasSpecificError) {
+          // Show general error message if no specific field error was handled
+          if (response.status === 400) {
+            showToast('Data yang dikirim tidak valid. Periksa kembali form.', 'error');
+          } else if (response.status === 409) {
+            showToast('Data sudah ada yang menggunakan. Coba dengan data yang lain.', 'error');
+          } else if (response.status >= 500) {
+            showToast('Terjadi kesalahan pada server. Coba lagi nanti.', 'error');
+          } else {
+            const errorMessage = data.message || data.error || 'Registrasi gagal. Silakan coba lagi.';
+            showToast(errorMessage, 'error');
+          }
+        }
       }
 
     } catch (error) {
-      console.error('Registration error details:', error);
-      
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         showToast('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 'error');
       } else if (error.message.includes('JSON')) {
         showToast('Server memberikan respons yang tidak valid.', 'error');
       } else {
-        showToast('Terjadi kesalahan: ' + error.message, 'error');
+        showToast('Terjadi kesalahan yang tidak terduga. Silakan coba lagi.', 'error');
       }
     } finally {
       setLoading(false);
     }
+  };
   };
 
   const handleReset = () => {
@@ -279,6 +441,8 @@ function Register() {
       alamat: '',
       nomor_hp: ''
     });
+    
+    clearAllFieldErrors();
     
     // Clear saved form data from localStorage
     localStorage.removeItem('registerFormData');
@@ -345,11 +509,15 @@ function Register() {
                 value={formData.username}
                 onChange={handleInputChange}
                 placeholder="Masukkan username"
-                className="form-input"
+                className={`form-input ${fieldErrors.username ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="username"
               />
-              <small className="form-hint">Minimal 3 karakter</small>
+              {fieldErrors.username ? (
+                <small className="form-error">{fieldErrors.username}</small>
+              ) : (
+                <small className="form-hint">Minimal 3 karakter</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -361,11 +529,15 @@ function Register() {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Masukkan email"
-                className="form-input"
+                className={`form-input ${fieldErrors.email ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="email"
               />
-              <small className="form-hint">Format: nama@domain.com</small>
+              {fieldErrors.email ? (
+                <small className="form-error">{fieldErrors.email}</small>
+              ) : (
+                <small className="form-hint">Format: nama@domain.com</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -377,11 +549,15 @@ function Register() {
                 value={formData.full_name}
                 onChange={handleInputChange}
                 placeholder="Masukkan nama lengkap"
-                className="form-input"
+                className={`form-input ${fieldErrors.full_name ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="name"
               />
-              <small className="form-hint">Nama lengkap sesuai identitas</small>
+              {fieldErrors.full_name ? (
+                <small className="form-error">{fieldErrors.full_name}</small>
+              ) : (
+                <small className="form-hint">Nama lengkap sesuai identitas</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -392,11 +568,15 @@ function Register() {
                 value={formData.alamat}
                 onChange={handleInputChange}
                 placeholder="Masukkan alamat lengkap"
-                className="form-input form-textarea"
+                className={`form-input form-textarea ${fieldErrors.alamat ? 'form-input-error' : ''}`}
                 disabled={loading}
                 rows={3}
               />
-              <small className="form-hint">Alamat lengkap tempat tinggal</small>
+              {fieldErrors.alamat ? (
+                <small className="form-error">{fieldErrors.alamat}</small>
+              ) : (
+                <small className="form-hint">Alamat lengkap tempat tinggal</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -408,11 +588,15 @@ function Register() {
                 value={formData.nomor_hp}
                 onChange={handleInputChange}
                 placeholder="08xxxxxxxxxx"
-                className="form-input"
+                className={`form-input ${fieldErrors.nomor_hp ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="tel"
               />
-              <small className="form-hint">Format: 08xxxxxxxxxx atau +62xxxxxxxxxx</small>
+              {fieldErrors.nomor_hp ? (
+                <small className="form-error">{fieldErrors.nomor_hp}</small>
+              ) : (
+                <small className="form-hint">Format: 08xxxxxxxxxx atau +62xxxxxxxxxx</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -424,11 +608,15 @@ function Register() {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Masukkan password"
-                className="form-input"
+                className={`form-input ${fieldErrors.password ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="new-password"
               />
-              <small className="form-hint">Minimal 6 karakter (tidak tersimpan untuk keamanan)</small>
+              {fieldErrors.password ? (
+                <small className="form-error">{fieldErrors.password}</small>
+              ) : (
+                <small className="form-hint">Minimal 6 karakter (tidak tersimpan untuk keamanan)</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -440,11 +628,15 @@ function Register() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="Ulangi password"
-                className="form-input"
+                className={`form-input ${fieldErrors.confirmPassword ? 'form-input-error' : ''}`}
                 disabled={loading}
                 autoComplete="new-password"
               />
-              <small className="form-hint">Harus sama dengan password di atas</small>
+              {fieldErrors.confirmPassword ? (
+                <small className="form-error">{fieldErrors.confirmPassword}</small>
+              ) : (
+                <small className="form-hint">Harus sama dengan password di atas</small>
+              )}
             </div>
 
             <div className="form-actions">
@@ -619,6 +811,17 @@ function Register() {
           cursor: not-allowed;
         }
 
+        .form-input-error {
+          border-color: #dc3545 !important;
+          background: #fff5f5 !important;
+          box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+        }
+
+        .form-input-error:focus {
+          border-color: #dc3545 !important;
+          box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2) !important;
+        }
+
         .form-textarea {
           resize: vertical;
           min-height: 80px;
@@ -629,6 +832,21 @@ function Register() {
           color: #666;
           font-size: 12px;
           font-style: italic;
+        }
+
+        .form-error {
+          color: #dc3545;
+          font-size: 12px;
+          font-weight: 500;
+          margin-top: 4px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .form-error:before {
+          content: "⚠";
+          font-size: 14px;
         }
 
         .form-actions {
