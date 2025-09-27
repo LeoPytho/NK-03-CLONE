@@ -54,7 +54,6 @@ const ProfilePage = () => {
       setAddressSuggestions(suggestions);
       setShowSuggestions(suggestions.length > 0);
     } catch (err) {
-      console.error("Error searching address:", err);
       setAddressSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -85,7 +84,6 @@ const ProfilePage = () => {
       }
       return null;
     } catch (error) {
-      console.error('Error reading address from localStorage:', error);
       return null;
     }
   };
@@ -99,7 +97,7 @@ const ProfilePage = () => {
         savedAt: new Date().toISOString()
       }));
     } catch (error) {
-      console.error('Error saving address to localStorage:', error);
+      return null;
     }
   };
 
@@ -137,7 +135,6 @@ const ProfilePage = () => {
 
       return null;
     } catch (error) {
-      console.error('Error getting stored data:', error);
       return null;
     }
   };
@@ -174,7 +171,6 @@ const ProfilePage = () => {
     setupAddressData(mockProfile);
     setSuccess('Displaying your profile from local storage data');
     setLoading(false);
-    console.log('Created mock profile from stored data:', mockProfile);
   };
 
   // Fetch only current user's profile
@@ -204,7 +200,6 @@ const ProfilePage = () => {
         throw new Error('No username or email found in stored data');
       }
 
-      console.log('Fetching your profile from:', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -214,7 +209,7 @@ const ProfilePage = () => {
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      
 
       if (response.ok && data.status) {
         // Merge API data with localStorage address data
@@ -231,11 +226,9 @@ const ProfilePage = () => {
         setSuccess('Profile loaded from server');
       } else {
         // API failed, create mock profile from stored data
-        console.log('API failed, creating mock profile from stored data');
         createMockProfileFromStoredData(storedData);
       }
     } catch (error) {
-      console.error('Fetch profile error:', error);
       
       // Network error - create mock profile from stored data
       createMockProfileFromStoredData(storedData);
@@ -397,8 +390,7 @@ const ProfilePage = () => {
       setEditingAddress(false);
       
     } catch (error) {
-      console.error('Update address error:', error);
-      
+       
       // Even if API fails, save to localStorage
       setProfile(prev => ({
         ...prev,
