@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import "../styles/header.css";
-import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes } from "react-icons/fa";
+import { FaPhone, FaEnvelope, FaBell, FaShoppingCart, FaUser, FaChevronDown, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
-  const navigate = useNavigate(); // Initialize navigate hook
+  const navigate = useNavigate();
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(2);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   const [dropdowns, setDropdowns] = useState({
     kategori: false,
     akun: false,
@@ -29,6 +31,83 @@ const Header = () => {
     } catch (error) {
       console.error('Error reading cart from localStorage:', error);
       return 0;
+    }
+  };
+
+  // Function to check login status
+  const checkAuthStatus = () => {
+    try {
+      // Check for login data in sessionStorage
+      const loginData = JSON.parse(sessionStorage.getItem('userLogin') || 'null');
+      if (loginData && loginData.isLoggedIn && loginData.token) {
+        setIsLoggedIn(true);
+        setUserInfo(loginData.user || { username: 'User' });
+        return;
+      }
+
+      // Check for registration data in sessionStorage (auto-login after registration)
+      const registrationData = JSON.parse(sessionStorage.getItem('userRegistration') || 'null');
+      if (registrationData && registrationData.isRegistered) {
+        setIsLoggedIn(true);
+        setUserInfo({ 
+          username: registrationData.username || 'User',
+          ...registrationData.userData 
+        });
+        return;
+      }
+
+      // Check for successful registration in localStorage (persistent)
+      const successfulRegData = JSON.parse(localStorage.getItem('successfulRegistration') || 'null');
+      if (successfulRegData && successfulRegData.isSuccessfullyRegistered) {
+        setIsLoggedIn(true);
+        setUserInfo({ 
+          username: successfulRegData.username || 'User',
+          email: successfulRegData.email,
+          full_name: successfulRegData.full_name
+        });
+        return;
+      }
+
+      // No valid authentication found
+      setIsLoggedIn(false);
+      setUserInfo(null);
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      setIsLoggedIn(false);
+      setUserInfo(null);
+    }
+  };
+
+  // Function to handle logout
+  const handleLogout = () => {
+    try {
+      // Clear all authentication related data
+      sessionStorage.removeItem('userLogin');
+      sessionStorage.removeItem('userRegistration');
+      sessionStorage.removeItem('authToken');
+      localStorage.removeItem('successfulRegistration');
+      localStorage.removeItem('registerFormData');
+      
+      // Reset state
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      
+      // Close any open dropdowns
+      setDropdowns({
+        kategori: false,
+        akun: false,
+        bantuan: false
+      });
+      
+      // Close mobile menu
+      setIsMobileMenuOpen(false);
+      
+      // Navigate to home page
+      navigate('/');
+      
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Error during logout:', error);
     }
   };
 
@@ -61,6 +140,28 @@ const Header = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
+
+  // Check authentication status on component mount and when storage changes
+  useEffect(() => {
+    checkAuthStatus();
+
+    // Listen for storage changes to update auth status
+    const handleStorageChange = (e) => {
+      if (e.key === 'userLogin' || e.key === 'userRegistration' || e.key === 'successfulRegistration') {
+        checkAuthStatus();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also check periodically for sessionStorage changes
+    const authCheckInterval = setInterval(checkAuthStatus, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(authCheckInterval);
     };
   }, []);
 
@@ -150,7 +251,7 @@ const Header = () => {
   // Modified handleCartClick function to navigate to /keranjang
   const handleCartClick = () => {
     console.log("Cart clicked - navigating to /keranjang");
-    navigate('/keranjang'); // Navigate to cart page
+    navigate('/keranjang');
   };
 
   const handleNotificationClick = () => {
@@ -176,6 +277,14 @@ const Header = () => {
     navigate('/');
   };
 
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
+  const handleRegisterClick = () => {
+    navigate('/register');
+  };
+
   return (
     <header>
       {/* Top Bar */}
@@ -198,7 +307,6 @@ const Header = () => {
         {/* Desktop Navigation Menu */}
         <div className="nav-menu">
           <a href="#" className="nav-link" onClick={handleBerandaClick}>Beranda</a>
-
           <a href="#" className="nav-link">Promo</a>
           
           {/* Dropdown Bantuan */}
@@ -223,7 +331,6 @@ const Header = () => {
         
         {/* Right Side Icons */}
         <div className="nav-icons">
-          
           <button className="icon-btn" onClick={handleCartClick}>
             <FaShoppingCart />
             {cartCount > 0 && (
@@ -231,26 +338,50 @@ const Header = () => {
             )}
           </button>
 
-          {/* Dropdown Akun - Only visible on desktop */}
-          <div 
-            className="dropdown desktop-only"
-            ref={el => dropdownRefs.current.akun = el}
-          >
-            <button 
-              className="dropdown-toggle user-btn"
-              onClick={() => handleDropdownToggle('akun')}
+          {/* Conditional rendering based on login status */}
+          {isLoggedIn ? (
+            /* Logged in user dropdown */
+            <div 
+              className="dropdown desktop-only"
+              ref={el => dropdownRefs.current.akun = el}
             >
-              <FaUser /> <FaChevronDown />
-            </button>
-            <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
-              <a href="#" className="dropdown-item">Profile Saya</a>
-              <a href="/myorder" className="dropdown-item">Pesanan Saya</a>
-              <a href="/wish" className="dropdown-item">Wishlist</a>
-              <div className="dropdown-divider"></div>
-              <a href="#" className="dropdown-item">Login</a>
-              <a href="#" className="dropdown-item">Daftar</a>
+              <button 
+                className="dropdown-toggle user-btn logged-in"
+                onClick={() => handleDropdownToggle('akun')}
+              >
+                <FaUser /> 
+                <span className="username">{userInfo?.username || userInfo?.full_name || 'User'}</span>
+                <FaChevronDown />
+              </button>
+              <div className={`dropdown-menu dropdown-menu-right ${dropdowns.akun ? 'show' : ''}`}>
+                <div className="dropdown-user-info">
+                  <strong>{userInfo?.full_name || userInfo?.username || 'User'}</strong>
+                  {userInfo?.email && <small>{userInfo.email}</small>}
+                </div>
+                <div className="dropdown-divider"></div>
+                <a href="#" className="dropdown-item">Profile Saya</a>
+                <a href="/myorder" className="dropdown-item">Pesanan Saya</a>
+                <a href="/wish" className="dropdown-item">Wishlist</a>
+                <div className="dropdown-divider"></div>
+                <button 
+                  className="dropdown-item logout-btn" 
+                  onClick={handleLogout}
+                >
+                  <FaSignOutAlt /> Logout
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Not logged in - show login/register buttons */
+            <div className="auth-buttons desktop-only">
+              <button className="auth-btn login-btn" onClick={handleLoginClick}>
+                Login
+              </button>
+              <button className="auth-btn register-btn" onClick={handleRegisterClick}>
+                Daftar
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -269,17 +400,37 @@ const Header = () => {
           </div>
           
           <div className="mobile-icons">
-            
             <button className="mobile-icon-button" onClick={handleCartClick}>
               <FaShoppingCart className="icon" />
               <span>Keranjang</span>
               {cartCount > 0 && <span className="badge">{cartCount}</span>}
             </button>
 
-            {/* Mobile Account Button - No icon, just text */}
-            <button className="mobile-icon-button mobile-account-btn">
-              <span>Akun Saya</span>
-            </button>
+            {/* Conditional rendering for mobile auth */}
+            {isLoggedIn ? (
+              <div className="mobile-user-section">
+                <div className="mobile-user-info">
+                  <FaUser className="user-icon" />
+                  <div className="user-details">
+                    <span className="username">{userInfo?.full_name || userInfo?.username || 'User'}</span>
+                    {userInfo?.email && <small className="email">{userInfo.email}</small>}
+                  </div>
+                </div>
+                <button className="mobile-logout-btn" onClick={handleLogout}>
+                  <FaSignOutAlt />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-auth-buttons">
+                <button className="mobile-auth-btn login" onClick={handleLoginClick}>
+                  Login
+                </button>
+                <button className="mobile-auth-btn register" onClick={handleRegisterClick}>
+                  Daftar
+                </button>
+              </div>
+            )}
           </div>
           
           <div className="mobile-contact">
@@ -295,6 +446,8 @@ const Header = () => {
           </div>
         </div>
       </nav>
+
+
     </header>
   );
 };
