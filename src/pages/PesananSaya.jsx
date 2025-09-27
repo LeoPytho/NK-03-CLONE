@@ -47,7 +47,7 @@ function MyOrders() {
 
     const user = getUserData();
     if (!user || !user.email) {
-      setError("Data pengguna tidak ditemukan. Silakan lakukan pemesanan terlebih dahulu.");
+      setError("Data pesanan tidak ditemukan. Silakan lakukan pemesanan terlebih dahulu.");
       setLoading(false);
       return;
     }
