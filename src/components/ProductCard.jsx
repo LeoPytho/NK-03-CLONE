@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import "../styles/product.css";
 
 function ProductCard({ product }) {
@@ -8,8 +7,21 @@ function ProductCard({ product }) {
       ? product.image_url[0]
       : "/img/no-image.png";
 
+  // Generate custom URL slug from product name or use custom_url if available
+  const generateSlug = (text) => {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-')      // Replace spaces with hyphens
+      .replace(/--+/g, '-')      // Replace multiple hyphens with single hyphen
+      .trim();
+  };
+
+  // Use custom_url from product if available, otherwise generate from name
+  const customUrl = product.custom_url || product.slug || generateSlug(product.name);
+
   return (
-    <Link to={`/product/${product.id}`} className="product-card">
+    <Link to={`/${customUrl}`} className="product-card">
       <img
         src={thumbnail}
         alt={product.name}
@@ -21,15 +33,6 @@ function ProductCard({ product }) {
         <p className="price">
           Rp{Number(product.price || 0).toLocaleString("id-ID")}
         </p>
-
-        <div className="product-info">
-          <p>
-            <FaStar color="gold" /> {product.rating || 0} | {product.sold || 0}
-          </p>
-          <p>
-            <FaMapMarkerAlt /> {product.location || "Jakarta"}
-          </p>
-        </div>
       </div>
     </Link>
   );
